@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Cloud Landing Zone Mindmap v5 - Banking on AWS</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:#06131f;color:#eef2f6;min-height:100vh}
+.bg{position:fixed;inset:0;z-index:-1;background:radial-gradient(circle at 25% 30%,rgba(255,153,0,.18),transparent 60%),radial-gradient(circle at 75% 70%,rgba(0,125,180,.22),transparent 65%),linear-gradient(135deg,#071a2b,#0d2536 50%,#143b56)}
+header{text-align:center;padding:46px 24px 20px}
+header h1{font-size:clamp(2.3rem,4.5vw,3.4rem);background:linear-gradient(90deg,#ff9900,#ffb84d,#00a9e0,#33cfff);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800;letter-spacing:.6px}
+header p{color:#b7c6d4;font-size:1.05rem;max-width:1150px;margin:14px auto 0;font-weight:400}
+.badge{display:inline-block;margin-top:14px;background:#152a40;border:1px solid #275575;padding:6px 16px;border-radius:24px;font-size:.72rem;letter-spacing:.85px;font-weight:600}
+main{max-width:1950px;margin:0 auto;padding:28px 36px 130px}
+.grid{display:grid;gap:30px;grid-template-columns:repeat(auto-fit,minmax(455px,1fr))}
+.domain{background:rgba(255,255,255,.05);backdrop-filter:blur(10px);border:2px solid;border-radius:22px;padding:24px 26px 32px;position:relative;overflow:hidden;box-shadow:0 8px 28px -6px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04);transition:.45s cubic-bezier(.68,-0.55,.27,1.55);opacity:0;animation:fadeIn .75s forwards}
+.domain:hover{transform:translateY(-7px);box-shadow:0 18px 46px -8px rgba(0,0,0,.6)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(34px)}to{opacity:1;transform:translateY(0)}}
+.domain:nth-child(1){animation-delay:.1s}.domain:nth-child(2){animation-delay:.18s}.domain:nth-child(3){animation-delay:.26s}.domain:nth-child(4){animation-delay:.34s}.domain:nth-child(5){animation-delay:.42s}.domain:nth-child(6){animation-delay:.5s}.domain:nth-child(7){animation-delay:.58s}.domain:nth-child(8){animation-delay:.66s}
+.d-head{display:flex;gap:18px;align-items:flex-start;cursor:pointer}
+.d-ico{font-size:2.35rem;line-height:1}
+.d-title{font-size:1.32rem;font-weight:700;margin-top:4px}
+.d-sub{font-size:.68rem;letter-spacing:.75px;text-transform:uppercase;margin-top:5px;color:#9fb2c6;font-weight:600}
+.toggle{margin-top:16px;display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);padding:7px 16px;font-size:.7rem;border-radius:18px;cursor:pointer;letter-spacing:.85px;font-weight:600;transition:.3s}
+.toggle:hover{background:rgba(255,255,255,.14)}
+.components{margin-top:20px;max-height:0;overflow:hidden;opacity:0;transition:max-height .65s ease,opacity .65s ease}
+.components.active{max-height:3000px;opacity:1}
+.comp{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:15px 16px 17px;border-radius:15px;margin-bottom:16px;transition:.35s}
+.comp:hover{background:rgba(255,255,255,.09)}
+.c-head{display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:.9rem;cursor:pointer}
+.c-arrow{font-size:.75rem;transition:.4s}
+.c-arrow.rot{transform:rotate(180deg)}
+.details{margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:9px;max-height:0;opacity:0;overflow:hidden;transition:max-height .5s ease,opacity .5s ease}
+.details.active{max-height:880px;opacity:1}
+.detail{background:rgba(255,255,255,.07);padding:8px 11px 9px;font-size:.66rem;line-height:1.1rem;border-left:3px solid;border-radius:9px;letter-spacing:.38px;display:flex;gap:6px;align-items:flex-start;position:relative}
+.detail:before{content:'→';opacity:.55;font-weight:600}
+.detail:hover{background:rgba(255,255,255,.12)}
+/* Colors (AWS palette inspired) */
+.domain-1{border-color:#ff9900}.domain-1 .detail{border-left-color:#ff9900}
+.domain-2{border-color:#ffb84d}.domain-2 .detail{border-left-color:#ffb84d}
+.domain-3{border-color:#00a9e0}.domain-3 .detail{border-left-color:#00a9e0}
+.domain-4{border-color:#33cfff}.domain-4 .detail{border-left-color:#33cfff}
+.domain-5{border-color:#c65102}.domain-5 .detail{border-left-color:#c65102}
+.domain-6{border-color:#f57c00}.domain-6 .detail{border-left-color:#f57c00}
+.domain-7{border-color:#795548}.domain-7 .detail{border-left-color:#795548}
+.domain-8{border-color:#2e7d32}.domain-8 .detail{border-left-color:#2e7d32}
+.controls{position:fixed;bottom:26px;right:26px;display:flex;flex-direction:column;gap:13px}
+.ctrl{background:#17354f;color:#fff;padding:12px 19px;border:none;border-radius:20px;font-size:.73rem;letter-spacing:.9px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px -3px rgba(0,0,0,.7);transition:.35s}
+.ctrl:hover{background:#215678}
+footer{text-align:center;color:#6e8399;font-size:.62rem;margin:42px 0 14px}
+@media (max-width:780px){.grid{grid-template-columns:1fr}.details{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.details{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<header>
+    <h1>Banking Landing Zone on AWS</h1>
+    <p>AWS-aligned financial services landing zone: multi-account strategy, Control Tower guardrails, zero trust identity, resilient payment & core banking architecture, continuous compliance for PCI, SOX, GDPR & regional regulations.</p>
+    <span class="badge">v5 AWS Banking Extension</span>
+</header>
+<main>
+    <div class="grid">
+        <!-- 1 Resource Organization -->
+        <div class="domain domain-1">
+            <div class="d-head" onclick="toggleDomain(1)"><div class="d-ico">📁</div><div><div class="d-title">Resource Organization</div><div class="d-sub">Multi-Account & Structure</div></div></div>
+            <div class="toggle" onclick="toggleDomain(1)"><span id="t-text-1">Show Components</span><span id="t-ico-1">▼</span></div>
+            <div class="components" id="dom-1">
+                <div class="comp" onclick="toggleComp(event,'1-1')"><div class="c-head"><span>AWS Organizations</span><span class="c-arrow" id="ico-1-1">▼</span></div><div class="details" id="det-1-1">
+                    <div class="detail">Root OU: security + logging segregation</div>
+                    <div class="detail">Workload OUs: payments, core banking, analytics</div>
+                    <div class="detail">Regulated vs general-purpose account split</div>
+                    <div class="detail">Lifecycle governance (prod/non-prod)</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'1-2')"><div class="c-head"><span>Control Tower Guardrails</span><span class="c-arrow" id="ico-1-2">▼</span></div><div class="details" id="det-1-2">
+                    <div class="detail">Mandatory preventive guardrails for PCI scope</div>
+                    <div class="detail">Detective guardrails for region usage</div>
+                    <div class="detail">Account factory for standardized provisioning</div>
+                    <div class="detail">Baseline blueprint versioning</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'1-3')"><div class="c-head"><span>SCP Strategy</span><span class="c-arrow" id="ico-1-3">▼</span></div><div class="details" id="det-1-3">
+                    <div class="detail">Deny unapproved regions & services</div>
+                    <div class="detail">Restrict access key creation policies</div>
+                    <div class="detail">Enforce mandatory tagging on create</div>
+                    <div class="detail">Limit wildcard IAM actions</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'1-4')"><div class="c-head"><span>Account Segmentation</span><span class="c-arrow" id="ico-1-4">▼</span></div><div class="details" id="det-1-4">
+                    <div class="detail">PCI in isolated accounts</div>
+                    <div class="detail">Shared services (network, CICD) separation</div>
+                    <div class="detail">Sandbox vs managed innovation zones</div>
+                    <div class="detail">Cost allocation via account boundaries</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'1-5')"><div class="c-head"><span>Naming & Tagging</span><span class="c-arrow" id="ico-1-5">▼</span></div><div class="details" id="det-1-5">
+                    <div class="detail">Tag policy: owner,cost-center,reg-scope</div>
+                    <div class="detail">AWS Resource Explorer alignment</div>
+                    <div class="detail">Automated remediation (Config rules)</div>
+                    <div class="detail">Standardized account alias patterns</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'1-6')"><div class="c-head"><span>Region & Resilience</span><span class="c-arrow" id="ico-1-6">▼</span></div><div class="details" id="det-1-6">
+                    <div class="detail">Primary region: latency vs compliance</div>
+                    <div class="detail">Secondary region cross-account replication</div>
+                    <div class="detail">Multi-AZ placement guardrails</div>
+                    <div class="detail">Data residency mapping matrix</div>
+                </div></div>
+            </div>
+        </div>
+        <!-- 2 Identity & Access -->
+        <div class="domain domain-2">
+            <div class="d-head" onclick="toggleDomain(2)"><div class="d-ico">🔐</div><div><div class="d-title">Identity & Access</div><div class="d-sub">Zero Trust IAM</div></div></div>
+            <div class="toggle" onclick="toggleDomain(2)"><span id="t-text-2">Show Components</span><span id="t-ico-2">▼</span></div>
+            <div class="components" id="dom-2">
+                <div class="comp" onclick="toggleComp(event,'2-1')"><div class="c-head"><span>IAM Roles & Boundaries</span><span class="c-arrow" id="ico-2-1">▼</span></div><div class="details" id="det-2-1">
+                    <div class="detail">Role per app component principle</div>
+                    <div class="detail">Permissions boundaries for vendor roles</div>
+                    <div class="detail">Federated identity via IAM Identity Center</div>
+                    <div class="detail">Automated role linting (policy simulator)</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'2-2')"><div class="c-head"><span>Least Privilege Patterns</span><span class="c-arrow" id="ico-2-2">▼</span></div><div class="details" id="det-2-2">
+                    <div class="detail">AWS Access Analyzer validations</div>
+                    <div class="detail">Action/resource narrowing automation</div>
+                    <div class="detail">Cross-account assume role scoping</div>
+                    <div class="detail">Time-bound role session policies</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'2-3')"><div class="c-head"><span>Privileged Access Control</span><span class="c-arrow" id="ico-2-3">▼</span></div><div class="details" id="det-2-3">
+                    <div class="detail">Break-glass root usage monitoring</div>
+                    <div class="detail">MFA enforced on all console access</div>
+                    <div class="detail">Session recording via CloudTrail Lake</div>
+                    <div class="detail">Periodic access review pipeline</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'2-4')"><div class="c-head"><span>Service & Machine Identities</span><span class="c-arrow" id="ico-2-4">▼</span></div><div class="details" id="det-2-4">
+                    <div class="detail">ECS/EKS IRSA for granular policies</div>
+                    <div class="detail">Secrets rotation via Secrets Manager</div>
+                    <div class="detail">Lambda execution role minimization</div>
+                    <div class="detail">Central catalog of machine principals</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'2-5')"><div class="c-head"><span>Conditional & Contextual Access</span><span class="c-arrow" id="ico-2-5">▼</span></div><div class="details" id="det-2-5">
+                    <div class="detail">Source IP & device condition policies</div>
+                    <div class="detail">Region & data classification constraints</div>
+                    <div class="detail">Context-aware session tags enforcement</div>
+                    <div class="detail">Policy evaluation logging & analytics</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'2-6')"><div class="c-head"><span>Identity Threat Detection</span><span class="c-arrow" id="ico-2-6">▼</span></div><div class="details" id="det-2-6">
+                    <div class="detail">GuardDuty monitoring for IAM anomalies</div>
+                    <div class="detail">Access key age & rotation governance</div>
+                    <div class="detail">Unused permission revocation job</div>
+                    <div class="detail">Access Analyzer external sharing alerts</div>
+                </div></div>
+            </div>
+        </div>
+        <!-- 3 Automation & DevSecOps -->
+        <div class="domain domain-3">
+            <div class="d-head" onclick="toggleDomain(3)"><div class="d-ico">⚙️</div><div><div class="d-title">Automation & DevSecOps</div><div class="d-sub">Continuous Assurance</div></div></div>
+            <div class="toggle" onclick="toggleDomain(3)"><span id="t-text-3">Show Components</span><span id="t-ico-3">▼</span></div>
+            <div class="components" id="dom-3">
+                <div class="comp" onclick="toggleComp(event,'3-1')"><div class="c-head"><span>IaC Baselines</span><span class="c-arrow" id="ico-3-1">▼</span></div><div class="details" id="det-3-1">
+                    <div class="detail">CloudFormation & CDK secured patterns</div>
+                    <div class="detail">Terraform module compliance wrappers</div>
+                    <div class="detail">Automated drift detection integration</div>
+                    <div class="detail">Pre-deployment OPA policy checks</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'3-2')"><div class="c-head"><span>Secure CI/CD</span><span class="c-arrow" id="ico-3-2">▼</span></div><div class="details" id="det-3-2">
+                    <div class="detail">CodePipeline artifact integrity (signing)</div>
+                    <div class="detail">CodeBuild SAST & dependency scans</div>
+                    <div class="detail">Secret injection via Parameter Store</div>
+                    <div class="detail">Automated rollback on failed guardrail</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'3-3')"><div class="c-head"><span>Test Data Controls</span><span class="c-arrow" id="ico-3-3">▼</span></div><div class="details" id="det-3-3">
+                    <div class="detail">Synthetic data generation pipelines</div>
+                    <div class="detail">DynamoDB masking transforms</div>
+                    <div class="detail">No sensitive PAN leak detection jobs</div>
+                    <div class="detail">Data classification tagging enforcement</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'3-4')"><div class="c-head"><span>Security Scanning</span><span class="c-arrow" id="ico-3-4">▼</span></div><div class="details" id="det-3-4">
+                    <div class="detail">ECR image vulnerability scanning</div>
+                    <div class="detail">Lambda & container SBOM generation</div>
+                    <div class="detail">Dependency graph risk scoring</div>
+                    <div class="detail">API schema linting (AppSync/REST)</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'3-5')"><div class="c-head"><span>GitOps & Orchestration</span><span class="c-arrow" id="ico-3-5">▼</span></div><div class="details" id="det-3-5">
+                    <div class="detail">ArgoCD / Flux for EKS deployments</div>
+                    <div class="detail">Declarative compliance manifest repos</div>
+                    <div class="detail">Automated rollback on policy violation</div>
+                    <div class="detail">Drift & reconciliation telemetry</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'3-6')"><div class="c-head"><span>Configuration Management</span><span class="c-arrow" id="ico-3-6">▼</span></div><div class="details" id="det-3-6">
+                    <div class="detail">AppConfig feature flag governance</div>
+                    <div class="detail">Secrets Manager rotation schedule</div>
+                    <div class="detail">SSM Parameter change auditing</div>
+                    <div class="detail">Central config drift alerts</div>
+                </div></div>
+            </div>
+        </div>
+        <!-- 4 Management & Operations -->
+        <div class="domain domain-4">
+            <div class="d-head" onclick="toggleDomain(4)"><div class="d-ico">🔧</div><div><div class="d-title">Management & Operations</div><div class="d-sub">Resilience & Observability</div></div></div>
+            <div class="toggle" onclick="toggleDomain(4)"><span id="t-text-4">Show Components</span><span id="t-ico-4">▼</span></div>
+            <div class="components" id="dom-4">
+                <div class="comp" onclick="toggleComp(event,'4-1')"><div class="c-head"><span>Monitoring & Telemetry</span><span class="c-arrow" id="ico-4-1">▼</span></div><div class="details" id="det-4-1">
+                    <div class="detail">CloudWatch metrics & cross-account dashboards</div>
+                    <div class="detail">X-Ray tracing for payment flows</div>
+                    <div class="detail">CloudTrail Lake analytics queries</div>
+                    <div class="detail">Kinesis real-time event streams</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'4-2')"><div class="c-head"><span>Alerting & Incident</span><span class="c-arrow" id="ico-4-2">▼</span></div><div class="details" id="det-4-2">
+                    <div class="detail">Metric & anomaly alarms (Lambda/Insights)</div>
+                    <div class="detail">SNS + EventBridge escalation workflows</div>
+                    <div class="detail">Incident runbook automation (SSM)</div>
+                    <div class="detail">Post-incident compliance dataset export</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'4-3')"><div class="c-head"><span>Backup & DR</span><span class="c-arrow" id="ico-4-3">▼</span></div><div class="details" id="det-4-3">
+                    <div class="detail">AWS Backup vault immutability</div>
+                    <div class="detail">Cross-region DynamoDB global tables</div>
+                    <div class="detail">RDS automated PITR validation</div>
+                    <div class="detail">Failover simulation (Fault Injection)</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'4-4')"><div class="c-head"><span>Change & Patch</span><span class="c-arrow" id="ico-4-4">▼</span></div><div class="details" id="det-4-4">
+                    <div class="detail">SSM Patch Manager baselines</div>
+                    <div class="detail">Pre-patch compliance snapshot</div>
+                    <div class="detail">Maintenance window governance</div>
+                    <div class="detail">Rollback verification automation</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'4-5')"><div class="c-head"><span>Operational Analytics</span><span class="c-arrow" id="ico-4-5">▼</span></div><div class="details" id="det-4-5">
+                    <div class="detail">Athena queries over operational logs</div>
+                    <div class="detail">Payment latency SLO dashboards</div>
+                    <div class="detail">Predictive scaling (Auto Scaling + Forecast)</div>
+                    <div class="detail">Anomaly detection (Lookout metrics)</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'4-6')"><div class="c-head"><span>ITSM & Governance</span><span class="c-arrow" id="ico-4-6">▼</span></div><div class="details" id="det-4-6">
+                    <div class="detail">Service Catalog for approved patterns</div>
+                    <div class="detail">Config + Audit Manager evidence collection</div>
+                    <div class="detail">CMDB enrichment via EventBridge feeds</div>
+                    <div class="detail">SOX control mapping pipelines</div>
+                </div></div>
+            </div>
+        </div>
+        <!-- 5 Security -->
+        <div class="domain domain-5">
+            <div class="d-head" onclick="toggleDomain(5)"><div class="d-ico">🛡️</div><div><div class="d-title">Security</div><div class="d-sub">Protection & Defense</div></div></div>
+            <div class="toggle" onclick="toggleDomain(5)"><span id="t-text-5">Show Components</span><span id="t-ico-5">▼</span></div>
+            <div class="components" id="dom-5">
+                <div class="comp" onclick="toggleComp(event,'5-1')"><div class="c-head"><span>Network Security</span><span class="c-arrow" id="ico-5-1">▼</span></div><div class="details" id="det-5-1">
+                    <div class="detail">VPC segmentation & network ACL tiers</div>
+                    <div class="detail">AWS Network Firewall policies</div>
+                    <div class="detail">PrivateLink for sensitive services</div>
+                    <div class="detail">TLS enforcement & certificate rotation</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'5-2')"><div class="c-head"><span>Data Encryption</span><span class="c-arrow" id="ico-5-2">▼</span></div><div class="details" id="det-5-2">
+                    <div class="detail">KMS key hierarchy & aliases</div>
+                    <div class="detail">Client-side encryption where required</div>
+                    <div class="detail">Key rotation monitoring dashboards</div>
+                    <div class="detail">Cross-account KMS access governance</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'5-3')"><div class="c-head"><span>Threat Detection</span><span class="c-arrow" id="ico-5-3">▼</span></div><div class="details" id="det-5-3">
+                    <div class="detail">GuardDuty findings triage pipeline</div>
+                    <div class="detail">Security Hub control coverage tracking</div>
+                    <div class="detail">Macie sensitive data alerts review</div>
+                    <div class="detail">Automated remediation (Lambda/StepFn)</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'5-4')"><div class="c-head"><span>Security Baselines</span><span class="c-arrow" id="ico-5-4">▼</span></div><div class="details" id="det-5-4">
+                    <div class="detail">Baseline guardrail conformance scans</div>
+                    <div class="detail">CIS benchmark via Security Hub</div>
+                    <div class="detail">Deviation exception workflow</div>
+                    <div class="detail">Drift alerts to operations channel</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'5-5')"><div class="c-head"><span>Vulnerability Mgmt</span><span class="c-arrow" id="ico-5-5">▼</span></div><div class="details" id="det-5-5">
+                    <div class="detail">Inspector scans for EC2/ECR/Lambda</div>
+                    <div class="detail">Prioritized CVE remediation tagging</div>
+                    <div class="detail">Central patch compliance dashboard</div>
+                    <div class="detail">Pen-test artifact storage encryption</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'5-6')"><div class="c-head"><span>Keys & Secrets</span><span class="c-arrow" id="ico-5-6">▼</span></div><div class="details" id="det-5-6">
+                    <div class="detail">Secrets Manager lifecycle policies</div>
+                    <div class="detail">Parameter Store tiered sensitivity</div>
+                    <div class="detail">Encrypted environment variable audits</div>
+                    <div class="detail">Break-glass key access logging</div>
+                </div></div>
+            </div>
+        </div>
+        <!-- 6 Governance & Compliance -->
+        <div class="domain domain-6">
+            <div class="d-head" onclick="toggleDomain(6)"><div class="d-ico">📋</div><div><div class="d-title">Governance & Compliance</div><div class="d-sub">Regulatory Alignment</div></div></div>
+            <div class="toggle" onclick="toggleDomain(6)"><span id="t-text-6">Show Components</span><span id="t-ico-6">▼</span></div>
+            <div class="components" id="dom-6">
+                <div class="comp" onclick="toggleComp(event,'6-1')"><div class="c-head"><span>Config & Audit Manager</span><span class="c-arrow" id="ico-6-1">▼</span></div><div class="details" id="det-6-1">
+                    <div class="detail">Global rules for encryption/tagging</div>
+                    <div class="detail">Conformance pack for PCI controls</div>
+                    <div class="detail">Evidence export for SOX audits</div>
+                    <div class="detail">Drift remediation automation</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'6-2')"><div class="c-head"><span>Control Tower & Guardrails</span><span class="c-arrow" id="ico-6-2">▼</span></div><div class="details" id="det-6-2">
+                    <div class="detail">Preventive guardrail catalog expansion</div>
+                    <div class="detail">Detective guardrail alert routing</div>
+                    <div class="detail">Versioned guardrail policy management</div>
+                    <div class="detail">Automated gap analysis pipeline</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'6-3')"><div class="c-head"><span>Compliance Monitoring</span><span class="c-arrow" id="ico-6-3">▼</span></div><div class="details" id="det-6-3">
+                    <div class="detail">Security Hub control coverage delta</div>
+                    <div class="detail">Real-time asset risk scoring feed</div>
+                    <div class="detail">Automated audit report generation</div>
+                    <div class="detail">Exception approval workflow</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'6-4')"><div class="c-head"><span>Audit & Forensics</span><span class="c-arrow" id="ico-6-4">▼</span></div><div class="details" id="det-6-4">
+                    <div class="detail">CloudTrail Lake immutable storage</div>
+                    <div class="detail">Access log retention lifecycle</div>
+                    <div class="detail">Evidence correlation (Athena queries)</div>
+                    <div class="detail">Forensic snapshot isolation</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'6-5')"><div class="c-head"><span>Regulatory Mapping</span><span class="c-arrow" id="ico-6-5">▼</span></div><div class="details" id="det-6-5">
+                    <div class="detail">PCI / PSD2 control coverage matrix</div>
+                    <div class="detail">Basel III & SOX evidence linkage</div>
+                    <div class="detail">GDPR data processing overlays</div>
+                    <div class="detail">ISO 27001 conformity tracking</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'6-6')"><div class="c-head"><span>Data Residency & Sovereignty</span><span class="c-arrow" id="ico-6-6">▼</span></div><div class="details" id="det-6-6">
+                    <div class="detail">Region restriction Config rules</div>
+                    <div class="detail">Cross-border replication approval logs</div>
+                    <div class="detail">Data location continuous scanning</div>
+                    <div class="detail">Residency compliance dashboards</div>
+                </div></div>
+            </div>
+        </div>
+        <!-- 7 Finance Management -->
+        <div class="domain domain-7">
+            <div class="d-head" onclick="toggleDomain(7)"><div class="d-ico">💰</div><div><div class="d-title">Finance Management</div><div class="d-sub">Cost Transparency</div></div></div>
+            <div class="toggle" onclick="toggleDomain(7)"><span id="t-text-7">Show Components</span><span id="t-ico-7">▼</span></div>
+            <div class="components" id="dom-7">
+                <div class="comp" onclick="toggleComp(event,'7-1')"><div class="c-head"><span>Cost Optimization</span><span class="c-arrow" id="ico-7-1">▼</span></div><div class="details" id="det-7-1">
+                    <div class="detail">Compute Optimizer rightsizing insights</div>
+                    <div class="detail">Savings Plan vs RI evaluation</div>
+                    <div class="detail">Idle resource detection (Config + custom)</div>
+                    <div class="detail">External cost anomaly event alerts</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'7-2')"><div class="c-head"><span>Budget & Forecasting</span><span class="c-arrow" id="ico-7-2">▼</span></div><div class="details" id="det-7-2">
+                    <div class="detail">AWS Budgets multi-account rollups</div>
+                    <div class="detail">Forecast API predictive modeling</div>
+                    <div class="detail">Tag-based budget segmentation</div>
+                    <div class="detail">Budget threshold escalation tiers</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'7-3')"><div class="c-head"><span>Chargeback / Showback</span><span class="c-arrow" id="ico-7-3">▼</span></div><div class="details" id="det-7-3">
+                    <div class="detail">Cost & Usage Report partitioning (Athena)</div>
+                    <div class="detail">Business unit allocation modeling</div>
+                    <div class="detail">Regulated vs non-regulated cost split</div>
+                    <div class="detail">Executive dashboards (QuickSight)</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'7-4')"><div class="c-head"><span>Allocation Precision</span><span class="c-arrow" id="ico-7-4">▼</span></div><div class="details" id="det-7-4">
+                    <div class="detail">Tag enforcement using SCP + Config</div>
+                    <div class="detail">Untagged spend quarantine process</div>
+                    <div class="detail">Shared service cost distribution model</div>
+                    <div class="detail">Regulatory workload cost drilldowns</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'7-5')"><div class="c-head"><span>Savings & Commitments</span><span class="c-arrow" id="ico-7-5">▼</span></div><div class="details" id="det-7-5">
+                    <div class="detail">RI portfolio utilization heatmap</div>
+                    <div class="detail">Seasonality analysis (holidays, closings)</div>
+                    <div class="detail">Automated RI/Savings Plan recommendations</div>
+                    <div class="detail">Commitment risk scoring analytics</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'7-6')"><div class="c-head"><span>Usage & Efficiency</span><span class="c-arrow" id="ico-7-6">▼</span></div><div class="details" id="det-7-6">
+                    <div class="detail">Utilization metrics by classification tag</div>
+                    <div class="detail">Compute efficiency benchmarking (CUR)</div>
+                    <div class="detail">Cross-region egress watch alerts</div>
+                    <div class="detail">Data pipeline efficiency KPIs</div>
+                </div></div>
+            </div>
+        </div>
+        <!-- 8 Financial & Regulatory Services -->
+        <div class="domain domain-8">
+            <div class="d-head" onclick="toggleDomain(8)"><div class="d-ico">🏦</div><div><div class="d-title">Financial & Regulatory Services</div><div class="d-sub">Core Banking & Compliance</div></div></div>
+            <div class="toggle" onclick="toggleDomain(8)"><span id="t-text-8">Show Components</span><span id="t-ico-8">▼</span></div>
+            <div class="components" id="dom-8">
+                <div class="comp" onclick="toggleComp(event,'8-1')"><div class="c-head"><span>Payments Processing</span><span class="c-arrow" id="ico-8-1">▼</span></div><div class="details" id="det-8-1">
+                    <div class="detail">API Gateway throttling & WAF rules</div>
+                    <div class="detail">Event-driven settlement (SQS/SNS)</div>
+                    <div class="detail">Tokenization microservice isolation</div>
+                    <div class="detail">Latency SLO monitoring pipelines</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'8-2')"><div class="c-head"><span>Core Ledger Services</span><span class="c-arrow" id="ico-8-2">▼</span></div><div class="details" id="det-8-2">
+                    <div class="detail">Amazon QLDB/Aurora consistency strategy</div>
+                    <div class="detail">Idempotent transaction workflow</div>
+                    <div class="detail">Multi-region read replica design</div>
+                    <div class="detail">Reconciliation pipeline (Glue/Athena)</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'8-3')"><div class="c-head"><span>Fraud & AML Analytics</span><span class="c-arrow" id="ico-8-3">▼</span></div><div class="details" id="det-8-3">
+                    <div class="detail">Streaming ingestion (Kinesis Analytics)</div>
+                    <div class="detail">Feature store governance (SageMaker)</div>
+                    <div class="detail">Model explainability monitors</div>
+                    <div class="detail">Case management integration APIs</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'8-4')"><div class="c-head"><span>Regulatory Reporting</span><span class="c-arrow" id="ico-8-4">▼</span></div><div class="details" id="det-8-4">
+                    <div class="detail">Data lineage tracking (Glue catalog)</div>
+                    <div class="detail">Version control of report templates</div>
+                    <div class="detail">Automated validation pipelines</div>
+                    <div class="detail">Evidence repository in S3 Glacier</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'8-5')"><div class="c-head"><span>Open Banking / API</span><span class="c-arrow" id="ico-8-5">▼</span></div><div class="details" id="det-8-5">
+                    <div class="detail">Consent & scope enforcement layer</div>
+                    <div class="detail">Developer portal (API Gateway usage plans)</div>
+                    <div class="detail">Secure partner sandbox segregation</div>
+                    <div class="detail">API version lifecycle governance</div>
+                </div></div>
+                <div class="comp" onclick="toggleComp(event,'8-6')"><div class="c-head"><span>Data Privacy & Classification</span><span class="c-arrow" id="ico-8-6">▼</span></div><div class="details" id="det-8-6">
+                    <div class="detail">Macie scanning & classification jobs</div>
+                    <div class="detail">Tokenization/pseudonymization workflow</div>
+                    <div class="detail">Automated retention & purge policies</div>
+                    <div class="detail">Justification capture for sensitive access</div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+</main>
+<div class="controls">
+    <button class="ctrl" onclick="expandAll()">EXPAND ALL</button>
+    <button class="ctrl" onclick="collapseAll()">COLLAPSE ALL</button>
+    <button class="ctrl" onclick="scrollTop()">TOP</button>
+</div>
+<footer>© 2025 AWS Banking Landing Zone | Financial-grade multi-account architecture</footer>
+<script>
+function toggleDomain(n){const c=document.getElementById(`dom-${n}`),t=document.getElementById(`t-text-${n}`),i=document.getElementById(`t-ico-${n}`);if(c.classList.contains('active')){c.classList.remove('active');t.textContent='Show Components';i.textContent='▼'}else{c.classList.add('active');t.textContent='Hide Components';i.textContent='▲'}}
+function toggleComp(e,id){e.stopPropagation();const d=document.getElementById(`det-${id}`),i=document.getElementById(`ico-${id}`);if(d.classList.contains('active')){d.classList.remove('active');i.classList.remove('rot')}else{d.classList.add('active');i.classList.add('rot')}}
+function expandAll(){for(let i=1;i<=8;i++){const c=document.getElementById(`dom-${i}`),t=document.getElementById(`t-text-${i}`),ic=document.getElementById(`t-ico-${i}`);if(c){c.classList.add('active');t.textContent='Hide Components';ic.textContent='▲';for(let j=1;j<=10;j++){const d=document.getElementById(`det-${i}-${j}`),a=document.getElementById(`ico-${i}-${j}`);if(d&&a){d.classList.add('active');a.classList.add('rot')}}}}}
+function collapseAll(){for(let i=1;i<=8;i++){const c=document.getElementById(`dom-${i}`),t=document.getElementById(`t-text-${i}`),ic=document.getElementById(`t-ico-${i}`);if(c){c.classList.remove('active');t.textContent='Show Components';ic.textContent='▼';for(let j=1;j<=10;j++){const d=document.getElementById(`det-${i}-${j}`),a=document.getElementById(`ico-${i}-${j}`);if(d&&a){d.classList.remove('active');a.classList.remove('rot')}}}}}
+function scrollTop(){window.scrollTo({top:0,behavior:'smooth'})}
+document.addEventListener('keydown',e=>{if(['e','E'].includes(e.key))expandAll();if(['c','C'].includes(e.key))collapseAll();if(['t','T'].includes(e.key))scrollTop()});
+</script>
+</body>
+</html>

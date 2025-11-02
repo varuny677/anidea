@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Landing Zone Mindmap v3</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e27;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: moveBackground 20s linear infinite;
+        }
+
+        @keyframes moveBackground {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            color: #a0aec0;
+            font-weight: 300;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .mindmap-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            position: relative;
+            padding: 40px 0;
+        }
+
+        .domains-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 30px;
+            max-width: 1800px;
+            width: 100%;
+            padding: 0 20px;
+        }
+
+        /* Domain Card */
+        .domain-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 2px solid;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .domain-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .domain-card:hover::before {
+            left: 100%;
+        }
+
+        .domain-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+        }
+
+        .domain-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .domain-icon {
+            font-size: 2.5em;
+            line-height: 1;
+        }
+
+        .domain-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: white;
+            line-height: 1.2;
+        }
+
+        .domain-subtitle {
+            font-size: 0.85em;
+            color: #a0aec0;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .toggle-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            color: white;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+            width: fit-content;
+        }
+
+        .toggle-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.05);
+        }
+
+        .components-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.6s ease, opacity 0.6s ease;
+            opacity: 0;
+        }
+
+        .components-container.active {
+            max-height: 3000px;
+            opacity: 1;
+        }
+
+        /* Level 2: Component */
+        .component-item {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(5px);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border: 1px solid;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .component-item:hover {
+            background: rgba(255,255,255,0.12);
+            transform: translateX(5px);
+        }
+
+        .component-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .component-icon {
+            font-size: 0.8em;
+            transition: transform 0.3s ease;
+        }
+
+        .component-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        /* Level 3: Details */
+        .details-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, opacity 0.4s ease, margin-top 0.4s ease;
+            opacity: 0;
+            margin-top: 0;
+        }
+
+        .details-container.active {
+            max-height: 1000px;
+            opacity: 1;
+            margin-top: 12px;
+        }
+
+        .detail-item {
+            background: rgba(255,255,255,0.05);
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            font-size: 0.85em;
+            color: #e2e8f0;
+            border-left: 3px solid;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-item:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+            padding-left: 16px;
+        }
+
+        .detail-item::before {
+            content: '→';
+            font-weight: bold;
+            opacity: 0.6;
+        }
+
+        /* Color schemes for each domain */
+        .domain-1 { border-color: #FF6B6B; }
+        .domain-1 .domain-icon { color: #FF6B6B; }
+        .domain-1 .component-item { border-color: rgba(255, 107, 107, 0.5); }
+        .domain-1 .detail-item { border-left-color: #FF6B6B; }
+
+        .domain-2 { border-color: #4ECDC4; }
+        .domain-2 .domain-icon { color: #4ECDC4; }
+        .domain-2 .component-item { border-color: rgba(78, 205, 196, 0.5); }
+        .domain-2 .detail-item { border-left-color: #4ECDC4; }
+
+        .domain-3 { border-color: #45B7D1; }
+        .domain-3 .domain-icon { color: #45B7D1; }
+        .domain-3 .component-item { border-color: rgba(69, 183, 209, 0.5); }
+        .domain-3 .detail-item { border-left-color: #45B7D1; }
+
+        .domain-4 { border-color: #FFA07A; }
+        .domain-4 .domain-icon { color: #FFA07A; }
+        .domain-4 .component-item { border-color: rgba(255, 160, 122, 0.5); }
+        .domain-4 .detail-item { border-left-color: #FFA07A; }
+
+        .domain-5 { border-color: #98D8C8; }
+        .domain-5 .domain-icon { color: #98D8C8; }
+        .domain-5 .component-item { border-color: rgba(152, 216, 200, 0.5); }
+        .domain-5 .detail-item { border-left-color: #98D8C8; }
+
+        .domain-6 { border-color: #F7DC6F; }
+        .domain-6 .domain-icon { color: #F7DC6F; }
+        .domain-6 .component-item { border-color: rgba(247, 220, 111, 0.5); }
+        .domain-6 .detail-item { border-left-color: #F7DC6F; }
+
+        .domain-7 { border-color: #BB8FCE; }
+        .domain-7 .domain-icon { color: #BB8FCE; }
+        .domain-7 .component-item { border-color: rgba(187, 143, 206, 0.5); }
+        .domain-7 .detail-item { border-left-color: #BB8FCE; }
+
+        /* Controls */
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .control-btn {
+            background: rgba(102, 126, 234, 0.9);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .control-btn:hover {
+            background: rgba(118, 75, 162, 0.9);
+            transform: translateX(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        }
+
+        .footer {
+            text-align: center;
+            color: #a0aec0;
+            margin-top: 50px;
+            padding: 30px;
+            font-size: 0.9em;
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .domains-grid {
+                grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2em; }
+            .domains-grid {
+                grid-template-columns: 1fr;
+                padding: 0 10px;
+            }
+            .domain-card {
+                padding: 20px;
+            }
+            .controls {
+                bottom: 15px;
+                right: 15px;
+                gap: 10px;
+            }
+            .control-btn {
+                padding: 10px 20px;
+                font-size: 0.9em;
+            }
+        }
+
+        /* Scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Loading animation */
+        .domain-card {
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .domain-card:nth-child(1) { animation-delay: 0.1s; }
+        .domain-card:nth-child(2) { animation-delay: 0.2s; }
+        .domain-card:nth-child(3) { animation-delay: 0.3s; }
+        .domain-card:nth-child(4) { animation-delay: 0.4s; }
+        .domain-card:nth-child(5) { animation-delay: 0.5s; }
+        .domain-card:nth-child(6) { animation-delay: 0.6s; }
+        .domain-card:nth-child(7) { animation-delay: 0.7s; }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>☁️ Cloud Landing Zone</h1>
+            <p>Enterprise-Grade Cloud Foundation Architecture - Deep Dive</p>
+            <span class="version-badge">Version 3.0 - Extended</span>
+        </div>
+
+        <div class="mindmap-wrapper">
+            <div class="domains-grid">
+                
+                <!-- Domain 1: Resource Organization -->
+                <div class="domain-card domain-1">
+                    <div class="domain-header" onclick="toggleDomain(1)">
+                        <div class="domain-icon">📁</div>
+                        <div>
+                            <div class="domain-title">Resource Organization</div>
+                        </div>
+                    </div>
+                    <div class="domain-subtitle">Structure & Hierarchy</div>
+                    <div class="toggle-btn" onclick="toggleDomain(1)">
+                        <span id="toggle-text-1">Show Components</span>
+                        <span id="toggle-icon-1">▼</span>
+                    </div>
+                    
+                    <div class="components-container" id="domain-1">
+                        <div class="component-item" onclick="toggleComponent(event, '1-1')">
+                            <div class="component-header">
+                                <span>Management Groups</span>
+                                <span class="component-icon" id="icon-1-1">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-1-1">
+                                <div class="detail-item">Hierarchical structure design</div>
+                                <div class="detail-item">Root management group setup</div>
+                                <div class="detail-item">Business unit alignment</div>
+                                <div class="detail-item">Policy inheritance patterns</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '1-2')">
+                            <div class="component-header">
+                                <span>Subscription Architecture</span>
+                                <span class="component-icon" id="icon-1-2">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-1-2">
+                                <div class="detail-item">Production subscriptions</div>
+                                <div class="detail-item">Non-production environments</div>
+                                <div class="detail-item">Sandbox subscriptions</div>
+                                <div class="detail-item">Subscription quotas & limits</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '1-3')">
+                            <div class="component-header">
+                                <span>Resource Groups</span>
+                                <span class="component-icon" id="icon-1-3">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-1-3">
+                                <div class="detail-item">Lifecycle-based grouping</div>
+                                <div class="detail-item">Application-centric design</div>
+                                <div class="detail-item">Environment separation</div>
+                                <div class="detail-item">RBAC assignment scope</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '1-4')">
+                            <div class="component-header">
+                                <span>Naming Standards</span>
+                                <span class="component-icon" id="icon-1-4">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-1-4">
+                                <div class="detail-item">Naming convention templates</div>
+                                <div class="detail-item">Resource type prefixes</div>
+                                <div class="detail-item">Environment identifiers</div>
+                                <div class="detail-item">Regional codes</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '1-5')">
+                            <div class="component-header">
+                                <span>Tagging Strategy</span>
+                                <span class="component-icon" id="icon-1-5">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-1-5">
+                                <div class="detail-item">Cost center tags</div>
+                                <div class="detail-item">Owner & contact information</div>
+                                <div class="detail-item">Environment classification</div>
+                                <div class="detail-item">Compliance & data classification</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '1-6')">
+                            <div class="component-header">
+                                <span>Regional Deployment</span>
+                                <span class="component-icon" id="icon-1-6">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-1-6">
+                                <div class="detail-item">Primary region selection</div>
+                                <div class="detail-item">Secondary DR regions</div>
+                                <div class="detail-item">Regional pairs strategy</div>
+                                <div class="detail-item">Data residency requirements</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Domain 2: Identity and Access Management -->
+                <div class="domain-card domain-2">
+                    <div class="domain-header" onclick="toggleDomain(2)">
+                        <div class="domain-icon">🔐</div>
+                        <div>
+                            <div class="domain-title">Identity & Access Management</div>
+                        </div>
+                    </div>
+                    <div class="domain-subtitle">Security & Permissions</div>
+                    <div class="toggle-btn" onclick="toggleDomain(2)">
+                        <span id="toggle-text-2">Show Components</span>
+                        <span id="toggle-icon-2">▼</span>
+                    </div>
+                    
+                    <div class="components-container" id="domain-2">
+                        <div class="component-item" onclick="toggleComponent(event, '2-1')">
+                            <div class="component-header">
+                                <span>Azure AD/Entra ID</span>
+                                <span class="component-icon" id="icon-2-1">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-2-1">
+                                <div class="detail-item">Tenant configuration</div>
+                                <div class="detail-item">User & group management</div>
+                                <div class="detail-item">B2B collaboration setup</div>
+                                <div class="detail-item">Identity protection policies</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '2-2')">
+                            <div class="component-header">
+                                <span>RBAC Policies</span>
+                                <span class="component-icon" id="icon-2-2">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-2-2">
+                                <div class="detail-item">Built-in role assignments</div>
+                                <div class="detail-item">Custom role definitions</div>
+                                <div class="detail-item">Least privilege principle</div>
+                                <div class="detail-item">Role assignment scope</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '2-3')">
+                            <div class="component-header">
+                                <span>Privileged Identity Management</span>
+                                <span class="component-icon" id="icon-2-3">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-2-3">
+                                <div class="detail-item">Just-in-time access</div>
+                                <div class="detail-item">Time-bound role activation</div>
+                                <div class="detail-item">Approval workflows</div>
+                                <div class="detail-item">Access reviews & audits</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '2-4')">
+                            <div class="component-header">
+                                <span>Service Principals</span>
+                                <span class="component-icon" id="icon-2-4">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-2-4">
+                                <div class="detail-item">App registrations</div>
+                                <div class="detail-item">Managed identities</div>
+                                <div class="detail-item">Certificate-based auth</div>
+                                <div class="detail-item">Service principal lifecycle</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '2-5')">
+                            <div class="component-header">
+                                <span>Conditional Access</span>
+                                <span class="component-icon" id="icon-2-5">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-2-5">
+                                <div class="detail-item">Location-based policies</div>
+                                <div class="detail-item">Device compliance checks</div>
+                                <div class="detail-item">Risk-based authentication</div>
+                                <div class="detail-item">Application access controls</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '2-6')">
+                            <div class="component-header">
+                                <span>MFA Configuration</span>
+                                <span class="component-icon" id="icon-2-6">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-2-6">
+                                <div class="detail-item">Authentication methods</div>
+                                <div class="detail-item">Passwordless authentication</div>
+                                <div class="detail-item">Registration policies</div>
+                                <div class="detail-item">Emergency access accounts</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Domain 3: Automation and DevSecOps -->
+                <div class="domain-card domain-3">
+                    <div class="domain-header" onclick="toggleDomain(3)">
+                        <div class="domain-icon">⚙️</div>
+                        <div>
+                            <div class="domain-title">Automation & DevSecOps</div>
+                        </div>
+                    </div>
+                    <div class="domain-subtitle">CI/CD & Infrastructure as Code</div>
+                    <div class="toggle-btn" onclick="toggleDomain(3)">
+                        <span id="toggle-text-3">Show Components</span>
+                        <span id="toggle-icon-3">▼</span>
+                    </div>
+                    
+                    <div class="components-container" id="domain-3">
+                        <div class="component-item" onclick="toggleComponent(event, '3-1')">
+                            <div class="component-header">
+                                <span>IaC Templates</span>
+                                <span class="component-icon" id="icon-3-1">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-3-1">
+                                <div class="detail-item">Terraform configurations</div>
+                                <div class="detail-item">ARM/Bicep templates</div>
+                                <div class="detail-item">Module library development</div>
+                                <div class="detail-item">State management strategy</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '3-2')">
+                            <div class="component-header">
+                                <span>CI/CD Pipelines</span>
+                                <span class="component-icon" id="icon-3-2">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-3-2">
+                                <div class="detail-item">Azure DevOps pipelines</div>
+                                <div class="detail-item">GitHub Actions workflows</div>
+                                <div class="detail-item">Build & release automation</div>
+                                <div class="detail-item">Multi-stage deployments</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '3-3')">
+                            <div class="component-header">
+                                <span>GitOps Workflows</span>
+                                <span class="component-icon" id="icon-3-3">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-3-3">
+                                <div class="detail-item">Git as source of truth</div>
+                                <div class="detail-item">Pull request workflows</div>
+                                <div class="detail-item">Automated reconciliation</div>
+                                <div class="detail-item">Drift detection & correction</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '3-4')">
+                            <div class="component-header">
+                                <span>Security Scanning</span>
+                                <span class="component-icon" id="icon-3-4">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-3-4">
+                                <div class="detail-item">SAST (Static Analysis)</div>
+                                <div class="detail-item">DAST (Dynamic Analysis)</div>
+                                <div class="detail-item">Container image scanning</div>
+                                <div class="detail-item">Dependency vulnerability checks</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '3-5')">
+                            <div class="component-header">
+                                <span>Deployment Gates</span>
+                                <span class="component-icon" id="icon-3-5">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-3-5">
+                                <div class="detail-item">Manual approval gates</div>
+                                <div class="detail-item">Automated quality gates</div>
+                                <div class="detail-item">Security compliance checks</div>
+                                <div class="detail-item">Rollback mechanisms</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '3-6')">
+                            <div class="component-header">
+                                <span>Configuration Management</span>
+                                <span class="component-icon" id="icon-3-6">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-3-6">
+                                <div class="detail-item">Azure Automation DSC</div>
+                                <div class="detail-item">Azure App Configuration</div>
+                                <div class="detail-item">Key Vault integration</div>
+                                <div class="detail-item">Environment-specific configs</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Domain 4: Management and Operations -->
+                <div class="domain-card domain-4">
+                    <div class="domain-header" onclick="toggleDomain(4)">
+                        <div class="domain-icon">🔧</div>
+                        <div>
+                            <div class="domain-title">Management & Operations</div>
+                        </div>
+                    </div>
+                    <div class="domain-subtitle">Monitoring & Maintenance</div>
+                    <div class="toggle-btn" onclick="toggleDomain(4)">
+                        <span id="toggle-text-4">Show Components</span>
+                        <span id="toggle-icon-4">▼</span>
+                    </div>
+                    
+                    <div class="components-container" id="domain-4">
+                        <div class="component-item" onclick="toggleComponent(event, '4-1')">
+                            <div class="component-header">
+                                <span>Monitoring & Logging</span>
+                                <span class="component-icon" id="icon-4-1">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-4-1">
+                                <div class="detail-item">Azure Monitor setup</div>
+                                <div class="detail-item">Log Analytics workspaces</div>
+                                <div class="detail-item">Application Insights</div>
+                                <div class="detail-item">Diagnostic settings</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '4-2')">
+                            <div class="component-header">
+                                <span>Alerting System</span>
+                                <span class="component-icon" id="icon-4-2">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-4-2">
+                                <div class="detail-item">Metric-based alerts</div>
+                                <div class="detail-item">Log query alerts</div>
+                                <div class="detail-item">Action groups setup</div>
+                                <div class="detail-item">Alert escalation policies</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '4-3')">
+                            <div class="component-header">
+                                <span>Backup & DR</span>
+                                <span class="component-icon" id="icon-4-3">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-4-3">
+                                <div class="detail-item">Azure Backup policies</div>
+                                <div class="detail-item">Site Recovery setup</div>
+                                <div class="detail-item">RPO/RTO definitions</div>
+                                <div class="detail-item">DR testing procedures</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '4-4')">
+                            <div class="component-header">
+                                <span>Update Management</span>
+                                <span class="component-icon" id="icon-4-4">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-4-4">
+                                <div class="detail-item">Patch management policies</div>
+                                <div class="detail-item">Update schedules</div>
+                                <div class="detail-item">Compliance tracking</div>
+                                <div class="detail-item">Change windows</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '4-5')">
+                            <div class="component-header">
+                                <span>Service Health</span>
+                                <span class="component-icon" id="icon-4-5">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-4-5">
+                                <div class="detail-item">Health monitoring dashboards</div>
+                                <div class="detail-item">Service availability tracking</div>
+                                <div class="detail-item">Planned maintenance alerts</div>
+                                <div class="detail-item">Incident communication</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '4-6')">
+                            <div class="component-header">
+                                <span>ITSM Integration</span>
+                                <span class="component-icon" id="icon-4-6">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-4-6">
+                                <div class="detail-item">ServiceNow connector</div>
+                                <div class="detail-item">Incident automation</div>
+                                <div class="detail-item">Change request workflows</div>
+                                <div class="detail-item">CMDB synchronization</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Domain 5: Security -->
+                <div class="domain-card domain-5">
+                    <div class="domain-header" onclick="toggleDomain(5)">
+                        <div class="domain-icon">🛡️</div>
+                        <div>
+                            <div class="domain-title">Security</div>
+                        </div>
+                    </div>
+                    <div class="domain-subtitle">Protection & Defense</div>
+                    <div class="toggle-btn" onclick="toggleDomain(5)">
+                        <span id="toggle-text-5">Show Components</span>
+                        <span id="toggle-icon-5">▼</span>
+                    </div>
+                    
+                    <div class="components-container" id="domain-5">
+                        <div class="component-item" onclick="toggleComponent(event, '5-1')">
+                            <div class="component-header">
+                                <span>Network Security</span>
+                                <span class="component-icon" id="icon-5-1">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-5-1">
+                                <div class="detail-item">NSG & ASG configuration</div>
+                                <div class="detail-item">Azure Firewall setup</div>
+                                <div class="detail-item">DDoS protection</div>
+                                <div class="detail-item">VNet peering & routing</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '5-2')">
+                            <div class="component-header">
+                                <span>Data Encryption</span>
+                                <span class="component-icon" id="icon-5-2">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-5-2">
+                                <div class="detail-item">Encryption at rest</div>
+                                <div class="detail-item">TLS/SSL certificates</div>
+                                <div class="detail-item">Customer-managed keys</div>
+                                <div class="detail-item">Transparent data encryption</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '5-3')">
+                            <div class="component-header">
+                                <span>Threat Protection</span>
+                                <span class="component-icon" id="icon-5-3">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-5-3">
+                                <div class="detail-item">Microsoft Defender for Cloud</div>
+                                <div class="detail-item">Threat intelligence integration</div>
+                                <div class="detail-item">Security incident response</div>
+                                <div class="detail-item">Sentinel SIEM integration</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '5-4')">
+                            <div class="component-header">
+                                <span>Security Baselines</span>
+                                <span class="component-icon" id="icon-5-4">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-5-4">
+                                <div class="detail-item">CIS benchmark compliance</div>
+                                <div class="detail-item">Azure Security Benchmark</div>
+                                <div class="detail-item">Hardening guidelines</div>
+                                <div class="detail-item">Configuration standards</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '5-5')">
+                            <div class="component-header">
+                                <span>Vulnerability Management</span>
+                                <span class="component-icon" id="icon-5-5">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-5-5">
+                                <div class="detail-item">Vulnerability scanning</div>
+                                <div class="detail-item">Patch prioritization</div>
+                                <div class="detail-item">Remediation tracking</div>
+                                <div class="detail-item">Penetration testing</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '5-6')">
+                            <div class="component-header">
+                                <span>Key Management</span>
+                                <span class="component-icon" id="icon-5-6">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-5-6">
+                                <div class="detail-item">Azure Key Vault setup</div>
+                                <div class="detail-item">Managed HSM configuration</div>
+                                <div class="detail-item">Key rotation policies</div>
+                                <div class="detail-item">Access policies & secrets</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Domain 6: Governance and Compliance -->
+                <div class="domain-card domain-6">
+                    <div class="domain-header" onclick="toggleDomain(6)">
+                        <div class="domain-icon">📋</div>
+                        <div>
+                            <div class="domain-title">Governance & Compliance</div>
+                        </div>
+                    </div>
+                    <div class="domain-subtitle">Policies & Standards</div>
+                    <div class="toggle-btn" onclick="toggleDomain(6)">
+                        <span id="toggle-text-6">Show Components</span>
+                        <span id="toggle-icon-6">▼</span>
+                    </div>
+                    
+                    <div class="components-container" id="domain-6">
+                        <div class="component-item" onclick="toggleComponent(event, '6-1')">
+                            <div class="component-header">
+                                <span>Azure Policy</span>
+                                <span class="component-icon" id="icon-6-1">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-6-1">
+                                <div class="detail-item">Policy definitions</div>
+                                <div class="detail-item">Initiative assignments</div>
+                                <div class="detail-item">Remediation tasks</div>
+                                <div class="detail-item">Compliance monitoring</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '6-2')">
+                            <div class="component-header">
+                                <span>Blueprints</span>
+                                <span class="component-icon" id="icon-6-2">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-6-2">
+                                <div class="detail-item">Environment templates</div>
+                                <div class="detail-item">Artifact definitions</div>
+                                <div class="detail-item">Version management</div>
+                                <div class="detail-item">Deployment tracking</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '6-3')">
+                            <div class="component-header">
+                                <span>Compliance Reports</span>
+                                <span class="component-icon" id="icon-6-3">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-6-3">
+                                <div class="detail-item">Compliance dashboards</div>
+                                <div class="detail-item">Policy compliance states</div>
+                                <div class="detail-item">Regulatory reporting</div>
+                                <div class="detail-item">Attestation management</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '6-4')">
+                            <div class="component-header">
+                                <span>Audit Trails</span>
+                                <span class="component-icon" id="icon-6-4">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-6-4">
+                                <div class="detail-item">Activity log retention</div>
+                                <div class="detail-item">Change tracking</div>
+                                <div class="detail-item">Access audit logs</div>
+                                <div class="detail-item">Immutable log storage</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '6-5')">
+                            <div class="component-header">
+                                <span>Regulatory Standards</span>
+                                <span class="component-icon" id="icon-6-5">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-6-5">
+                                <div class="detail-item">GDPR compliance</div>
+                                <div class="detail-item">HIPAA requirements</div>
+                                <div class="detail-item">SOC 2 controls</div>
+                                <div class="detail-item">ISO 27001 alignment</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '6-6')">
+                            <div class="component-header">
+                                <span>Data Residency</span>
+                                <span class="component-icon" id="icon-6-6">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-6-6">
+                                <div class="detail-item">Geographic restrictions</div>
+                                <div class="detail-item">Sovereignty requirements</div>
+                                <div class="detail-item">Cross-border data transfer</div>
+                                <div class="detail-item">Regional compliance</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Domain 7: Finance Management -->
+                <div class="domain-card domain-7">
+                    <div class="domain-header" onclick="toggleDomain(7)">
+                        <div class="domain-icon">💰</div>
+                        <div>
+                            <div class="domain-title">Finance Management</div>
+                        </div>
+                    </div>
+                    <div class="domain-subtitle">Cost Control & Optimization</div>
+                    <div class="toggle-btn" onclick="toggleDomain(7)">
+                        <span id="toggle-text-7">Show Components</span>
+                        <span id="toggle-icon-7">▼</span>
+                    </div>
+                    
+                    <div class="components-container" id="domain-7">
+                        <div class="component-item" onclick="toggleComponent(event, '7-1')">
+                            <div class="component-header">
+                                <span>Cost Optimization</span>
+                                <span class="component-icon" id="icon-7-1">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-7-1">
+                                <div class="detail-item">Azure Advisor recommendations</div>
+                                <div class="detail-item">Rightsizing analysis</div>
+                                <div class="detail-item">Idle resource identification</div>
+                                <div class="detail-item">Cost anomaly detection</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '7-2')">
+                            <div class="component-header">
+                                <span>Budget Controls</span>
+                                <span class="component-icon" id="icon-7-2">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-7-2">
+                                <div class="detail-item">Budget definitions</div>
+                                <div class="detail-item">Spending thresholds</div>
+                                <div class="detail-item">Alert notifications</div>
+                                <div class="detail-item">Forecasting models</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '7-3')">
+                            <div class="component-header">
+                                <span>Chargeback Models</span>
+                                <span class="component-icon" id="icon-7-3">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-7-3">
+                                <div class="detail-item">Departmental billing</div>
+                                <div class="detail-item">Project cost allocation</div>
+                                <div class="detail-item">Showback reports</div>
+                                <div class="detail-item">Business unit accounting</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '7-4')">
+                            <div class="component-header">
+                                <span>Cost Allocation</span>
+                                <span class="component-icon" id="icon-7-4">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-7-4">
+                                <div class="detail-item">Tag-based allocation</div>
+                                <div class="detail-item">Resource group billing</div>
+                                <div class="detail-item">Subscription-level costs</div>
+                                <div class="detail-item">Shared service costs</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '7-5')">
+                            <div class="component-header">
+                                <span>Reserved Instances</span>
+                                <span class="component-icon" id="icon-7-5">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-7-5">
+                                <div class="detail-item">RI purchase strategy</div>
+                                <div class="detail-item">Capacity planning</div>
+                                <div class="detail-item">Utilization tracking</div>
+                                <div class="detail-item">Savings plans evaluation</div>
+                            </div>
+                        </div>
+
+                        <div class="component-item" onclick="toggleComponent(event, '7-6')">
+                            <div class="component-header">
+                                <span>Usage Analytics</span>
+                                <span class="component-icon" id="icon-7-6">▼</span>
+                            </div>
+                            <div class="details-container" id="detail-7-6">
+                                <div class="detail-item">Cost Management dashboards</div>
+                                <div class="detail-item">Trend analysis</div>
+                                <div class="detail-item">Resource utilization metrics</div>
+                                <div class="detail-item">Power BI integration</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" onclick="expandAll()">📂 Expand All</button>
+            <button class="control-btn" onclick="collapseAll()">📁 Collapse All</button>
+            <button class="control-btn" onclick="scrollToTop()">⬆️ Back to Top</button>
+        </div>
+
+        <div class="footer">
+            <p><strong>Cloud Landing Zone Framework v3.0</strong></p>
+            <p>Comprehensive enterprise architecture with detailed implementation guidance</p>
+            <p style="margin-top: 10px; font-size: 0.85em;">© 2025 Platform Engineering | Built by Cloud Architect</p>
+        </div>
+    </div>
+
+    <script>
+        // Toggle domain (Level 1)
+        function toggleDomain(domainNum) {
+            const container = document.getElementById(`domain-${domainNum}`);
+            const toggleText = document.getElementById(`toggle-text-${domainNum}`);
+            const toggleIcon = document.getElementById(`toggle-icon-${domainNum}`);
+            
+            if (container.classList.contains('active')) {
+                container.classList.remove('active');
+                toggleText.textContent = 'Show Components';
+                toggleIcon.textContent = '▼';
+            } else {
+                container.classList.add('active');
+                toggleText.textContent = 'Hide Components';
+                toggleIcon.textContent = '▲';
+            }
+        }
+
+        // Toggle component (Level 2)
+        function toggleComponent(event, componentId) {
+            event.stopPropagation();
+            const details = document.getElementById(`detail-${componentId}`);
+            const icon = document.getElementById(`icon-${componentId}`);
+            
+            if (details.classList.contains('active')) {
+                details.classList.remove('active');
+                icon.classList.remove('rotated');
+            } else {
+                details.classList.add('active');
+                icon.classList.add('rotated');
+            }
+        }
+
+        // Expand all domains and components
+        function expandAll() {
+            // Expand all domains
+            for (let i = 1; i <= 7; i++) {
+                const container = document.getElementById(`domain-${i}`);
+                const toggleText = document.getElementById(`toggle-text-${i}`);
+                const toggleIcon = document.getElementById(`toggle-icon-${i}`);
+                
+                container.classList.add('active');
+                toggleText.textContent = 'Hide Components';
+                toggleIcon.textContent = '▲';
+
+                // Expand all components in this domain
+                for (let j = 1; j <= 6; j++) {
+                    const details = document.getElementById(`detail-${i}-${j}`);
+                    const icon = document.getElementById(`icon-${i}-${j}`);
+                    if (details) {
+                        details.classList.add('active');
+                        icon.classList.add('rotated');
+                    }
+                }
+            }
+        }
+
+        // Collapse all domains and components
+        function collapseAll() {
+            // Collapse all domains
+            for (let i = 1; i <= 7; i++) {
+                const container = document.getElementById(`domain-${i}`);
+                const toggleText = document.getElementById(`toggle-text-${i}`);
+                const toggleIcon = document.getElementById(`toggle-icon-${i}`);
+                
+                container.classList.remove('active');
+                toggleText.textContent = 'Show Components';
+                toggleIcon.textContent = '▼';
+
+                // Collapse all components in this domain
+                for (let j = 1; j <= 6; j++) {
+                    const details = document.getElementById(`detail-${i}-${j}`);
+                    const icon = document.getElementById(`icon-${i}-${j}`);
+                    if (details) {
+                        details.classList.remove('active');
+                        icon.classList.remove('rotated');
+                    }
+                }
+            }
+        }
+
+        // Scroll to top
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'e' || event.key === 'E') {
+                expandAll();
+            } else if (event.key === 'c' || event.key === 'C') {
+                collapseAll();
+            } else if (event.key === 't' || event.key === 'T') {
+                scrollToTop();
+            }
+        });
+
+        // Add hover effect to detail items
+        document.querySelectorAll('.detail-item').forEach(item => {
+            item.addEventListener('click', function() {
+                this.style.transform = 'translateX(10px)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+            });
+        });
+    </script>
+</body>
+</html>

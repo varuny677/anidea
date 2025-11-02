@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Cloud Landing Zone Mindmap v4 - Healthcare</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, Arial, sans-serif;
+            background:#071322;
+            color:#fff;
+            min-height:100vh;
+        }
+        .grad-bg {
+            position:fixed; inset:0; z-index:-1;
+            background:radial-gradient(circle at 30% 30%,rgba(102,126,234,.25),transparent 60%),
+                       radial-gradient(circle at 70% 70%,rgba(118,75,162,.25),transparent 65%),
+                       linear-gradient(135deg,#0b1d33,#132e52 60%,#1f3e6d);
+            filter:brightness(1.05) saturate(1.1);
+        }
+        header { text-align:center; padding:40px 20px 10px; }
+        header h1 {
+            font-size: clamp(2rem,4vw,3rem);
+            background:linear-gradient(90deg,#6a8bff,#b372ff,#ff7fcf);
+            -webkit-background-clip:text; background-clip:text; color:transparent;
+            font-weight:800; letter-spacing:1px; margin-bottom:12px;
+        }
+        header p { color:#b8c4d6; font-size:1.05rem; }
+        .badge { display:inline-block; margin-top:10px; background:#1d2955; border:1px solid #3853a3; padding:6px 14px; border-radius:24px; font-size:.8rem; letter-spacing:.5px; }
+        main { max-width:1900px; margin:0 auto; padding:25px 30px 120px; }
+        .grid { display:grid; gap:28px; grid-template-columns:repeat(auto-fit,minmax(430px,1fr)); }
+        .domain-card {
+            position:relative; background:rgba(255,255,255,.05); backdrop-filter:blur(10px);
+            border:2px solid; border-radius:22px; padding:22px 22px 26px; overflow:hidden;
+            box-shadow:0 8px 28px -6px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.05);
+            transition:.45s cubic-bezier(.68,-0.55,.27,1.55); cursor:default;
+            opacity:0; animation:fadeInUp .7s forwards;
+        }
+        .domain-card:hover { transform:translateY(-6px); box-shadow:0 16px 40px -6px rgba(0,0,0,.55); }
+        @keyframes fadeInUp { from { opacity:0; transform:translateY(30px);} to { opacity:1; transform:translateY(0);} }
+        .domain-header { display:flex; align-items:flex-start; gap:16px; cursor:pointer; }
+        .domain-icon { font-size:2.4rem; line-height:1; }
+        .domain-title { font-size:1.35rem; font-weight:700; margin-top:2px; }
+        .domain-sub { font-size:.78rem; letter-spacing:.7px; text-transform:uppercase; margin-top:2px; color:#9fb1c9; font-weight:600; }
+        .toggle { margin-top:14px; display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); padding:7px 14px; font-size:.8rem; border-radius:18px; cursor:pointer; transition:.3s; }
+        .toggle:hover { background:rgba(255,255,255,.16); }
+        .components { margin-top:18px; max-height:0; overflow:hidden; opacity:0; transition:max-height .6s ease, opacity .6s ease; }
+        .components.active { max-height:2600px; opacity:1; }
+        .component { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); padding:14px 14px 16px; border-radius:14px; margin-bottom:14px; transition:.3s; }
+        .component:hover { background:rgba(255,255,255,.09); }
+        .comp-header { display:flex; justify-content:space-between; align-items:center; font-weight:600; font-size:.95rem; cursor:pointer; }
+        .comp-arrow { font-size:.75rem; transition:.35s; }
+        .comp-arrow.rot { transform:rotate(180deg); }
+        .details { margin-top:12px; display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; max-height:0; opacity:0; overflow:hidden; transition:max-height .45s ease, opacity .45s ease; }
+        .details.active { max-height:800px; opacity:1; }
+        .detail { background:rgba(255,255,255,.07); padding:8px 10px 9px; font-size:.7rem; line-height:1.15rem; border-left:3px solid; border-radius:8px; letter-spacing:.3px; display:flex; gap:6px; align-items:flex-start; position:relative; }
+        .detail:before { content:'→'; opacity:.55; font-weight:600; }
+        .detail:hover { background:rgba(255,255,255,.12); }
+        /* Color mapping */
+        .domain-1 { border-color:#ff6b6b; }
+        .domain-1 .detail { border-left-color:#ff6b6b; }
+        .domain-2 { border-color:#4ecdc4; }
+        .domain-2 .detail { border-left-color:#4ecdc4; }
+        .domain-3 { border-color:#45b7d1; }
+        .domain-3 .detail { border-left-color:#45b7d1; }
+        .domain-4 { border-color:#ffa07a; }
+        .domain-4 .detail { border-left-color:#ffa07a; }
+        .domain-5 { border-color:#98d8c8; }
+        .domain-5 .detail { border-left-color:#98d8c8; }
+        .domain-6 { border-color:#f7dc6f; }
+        .domain-6 .detail { border-left-color:#f7dc6f; }
+        .domain-7 { border-color:#bb8fce; }
+        .domain-7 .detail { border-left-color:#bb8fce; }
+        .domain-8 { border-color:#6ee7b7; }
+        .domain-8 .detail { border-left-color:#6ee7b7; }
+        /* Controls */
+        .controls { position:fixed; bottom:24px; right:24px; display:flex; flex-direction:column; gap:12px; }
+        .ctrl-btn { background:#1d3f72; color:#fff; padding:12px 18px; border:none; border-radius:18px; font-size:.8rem; letter-spacing:.7px; font-weight:600; cursor:pointer; box-shadow:0 4px 14px -3px rgba(0,0,0,.6); transition:.3s; }
+        .ctrl-btn:hover { background:#285a9f; }
+        footer { text-align:center; color:#8093a9; font-size:.7rem; margin:40px 0 10px; }
+        @media (max-width:780px){ .grid { grid-template-columns:1fr; } .details { grid-template-columns:1fr 1fr; } }
+        @media (max-width:520px){ .details { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body>
+    <div class="grad-bg"></div>
+    <header>
+        <h1>Healthcare Cloud Landing Zone</h1>
+        <p>Baseline enterprise landing zone enhanced with healthcare-grade controls (HIPAA, HITECH, GDPR for health data, FHIR interoperability)</p>
+        <span class="badge">v4 Healthcare Extension</span>
+    </header>
+    <main>
+        <div class="grid">
+            <!-- Domain 1: Resource Organization -->
+            <div class="domain-card domain-1">
+                <div class="domain-header" onclick="toggleDomain(1)">
+                    <div class="domain-icon">📁</div>
+                    <div>
+                        <div class="domain-title">Resource Organization</div>
+                        <div class="domain-sub">Isolation & Segmentation</div>
+                    </div>
+                </div>
+                <div class="toggle" onclick="toggleDomain(1)"><span id="toggle-text-1">Show Components</span><span id="toggle-icon-1">▼</span></div>
+                <div class="components" id="domain-1">
+                    <!-- Management Groups -->
+                    <div class="component" onclick="toggleComponent(event,'1-1')">
+                        <div class="comp-header"><span>Management Groups</span><span class="comp-arrow" id="icon-1-1">▼</span></div>
+                        <div class="details" id="detail-1-1">
+                            <div class="detail">Tiered structure: Root / Security / Platform / Workloads</div>
+                            <div class="detail">Dedicated PHI segment vs Non-PHI</div>
+                            <div class="detail">Research workloads isolated separately</div>
+                            <div class="detail">Policy inheritance for HIPAA safeguards</div>
+                        </div>
+                    </div>
+                    <!-- Subscription Architecture -->
+                    <div class="component" onclick="toggleComponent(event,'1-2')">
+                        <div class="comp-header"><span>Subscription Architecture</span><span class="comp-arrow" id="icon-1-2">▼</span></div>
+                        <div class="details" id="detail-1-2">
+                            <div class="detail">Prod vs Non-Prod enforced separation</div>
+                            <div class="detail">Clinical vs Analytics subscriptions</div>
+                            <div class="detail">Dedicated regulated data pipelines subscription</div>
+                            <div class="detail">Quota governance & capacity forecasting</div>
+                        </div>
+                    </div>
+                    <!-- Resource Groups -->
+                    <div class="component" onclick="toggleComponent(event,'1-3')">
+                        <div class="comp-header"><span>Resource Groups</span><span class="comp-arrow" id="icon-1-3">▼</span></div>
+                        <div class="details" id="detail-1-3">
+                            <div class="detail">Lifecycle alignment (Clinical App / Data / Integration)</div>
+                            <div class="detail">Emergency override RG for critical services</div>
+                            <div class="detail">Separation for PHI processing vs derived datasets</div>
+                            <div class="detail">Scoped RBAC to reduce blast radius</div>
+                        </div>
+                    </div>
+                    <!-- Naming Standards -->
+                    <div class="component" onclick="toggleComponent(event,'1-4')">
+                        <div class="comp-header"><span>Naming Standards</span><span class="comp-arrow" id="icon-1-4">▼</span></div>
+                        <div class="details" id="detail-1-4">
+                            <div class="detail">Pattern: [org]-[env]-[svc]-[region]-[tier]</div>
+                            <div class="detail">Health-critical flag in names for alerting</div>
+                            <div class="detail">Data classification suffix (phi/nonphi)</div>
+                            <div class="detail">Automation validation via policy</div>
+                        </div>
+                    </div>
+                    <!-- Tagging Strategy -->
+                    <div class="component" onclick="toggleComponent(event,'1-5')">
+                        <div class="comp-header"><span>Tagging Strategy</span><span class="comp-arrow" id="icon-1-5">▼</span></div>
+                        <div class="details" id="detail-1-5">
+                            <div class="detail">Required tags: owner, data-class, compliance-scope</div>
+                            <div class="detail">Cost-center & clinical-department</div>
+                            <div class="detail">Retention & archival policy tags</div>
+                            <div class="detail">Automated remediation for missing tags</div>
+                        </div>
+                    </div>
+                    <!-- Regional Deployment -->
+                    <div class="component" onclick="toggleComponent(event,'1-6')">
+                        <div class="comp-header"><span>Regional Deployment</span><span class="comp-arrow" id="icon-1-6">▼</span></div>
+                        <div class="details" id="detail-1-6">
+                            <div class="detail">Region selection based on PHI locality laws</div>
+                            <div class="detail">DR region meets healthcare latency SLAs</div>
+                            <div class="detail">Multi-region active/active for critical clinical apps</div>
+                            <div class="detail">Explicit data residency mapping matrix</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Domain 2: Identity & Access -->
+            <div class="domain-card domain-2">
+                <div class="domain-header" onclick="toggleDomain(2)">
+                    <div class="domain-icon">🔐</div>
+                    <div>
+                        <div class="domain-title">Identity & Access</div>
+                        <div class="domain-sub">Clinical Role Governance</div>
+                    </div>
+                </div>
+                <div class="toggle" onclick="toggleDomain(2)"><span id="toggle-text-2">Show Components</span><span id="toggle-icon-2">▼</span></div>
+                <div class="components" id="domain-2">
+                    <div class="component" onclick="toggleComponent(event,'2-1')">
+                        <div class="comp-header"><span>Entra ID Tenant</span><span class="comp-arrow" id="icon-2-1">▼</span></div>
+                        <div class="details" id="detail-2-1">
+                            <div class="detail">Healthcare directory schema extensions</div>
+                            <div class="detail">Provider vs Patient identity isolation</div>
+                            <div class="detail">Federation with hospital IdP</div>
+                            <div class="detail">Conditional Access baseline templates</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'2-2')">
+                        <div class="comp-header"><span>Role-Based & Attribute Access</span><span class="comp-arrow" id="icon-2-2">▼</span></div>
+                        <div class="details" id="detail-2-2">
+                            <div class="detail">Custom roles for clinical operations</div>
+                            <div class="detail">Attribute-based policies (data-class=phi)</div>
+                            <div class="detail">Separation of duties for compliance</div>
+                            <div class="detail">Dynamic groups for staff rotations</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'2-3')">
+                        <div class="comp-header"><span>Privileged Identity Mgmt</span><span class="comp-arrow" id="icon-2-3">▼</span></div>
+                        <div class="details" id="detail-2-3">
+                            <div class="detail">JIT elevation for PHI data operations</div>
+                            <div class="detail">Break-glass account monitoring</div>
+                            <div class="detail">Approval chain with audit trail</div>
+                            <div class="detail">Access expiry tied to ticket system</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'2-4')">
+                        <div class="comp-header"><span>Service Principals & Managed IDs</span><span class="comp-arrow" id="icon-2-4">▼</span></div>
+                        <div class="details" id="detail-2-4">
+                            <div class="detail">Rotation of credentials quarterly</div>
+                            <div class="detail">Least-privilege templates for integration APIs</div>
+                            <div class="detail">Managed identity for FHIR ingestion</div>
+                            <div class="detail">Central catalog of automation identities</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'2-5')">
+                        <div class="comp-header"><span>Conditional Access</span><span class="comp-arrow" id="icon-2-5">▼</span></div>
+                        <div class="details" id="detail-2-5">
+                            <div class="detail">Geo & device posture enforcement</div>
+                            <div class="detail">Mandatory MFA for PHI zones</div>
+                            <div class="detail">Risk-adaptive step-up auth</div>
+                            <div class="detail">Legacy auth blocked for clinical data</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'2-6')">
+                        <div class="comp-header"><span>Identity Protection & Monitoring</span><span class="comp-arrow" id="icon-2-6">▼</span></div>
+                        <div class="details" id="detail-2-6">
+                            <div class="detail">Anomalous access to PHI detection</div>
+                            <div class="detail">Credential compromise playbooks</div>
+                            <div class="detail">Continuous staff offboarding checks</div>
+                            <div class="detail">Identity risk scoring integration</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Domain 3: Automation & DevSecOps -->
+            <div class="domain-card domain-3">
+                <div class="domain-header" onclick="toggleDomain(3)">
+                    <div class="domain-icon">⚙️</div>
+                    <div>
+                        <div class="domain-title">Automation & DevSecOps</div>
+                        <div class="domain-sub">Continuous Compliance</div>
+                    </div>
+                </div>
+                <div class="toggle" onclick="toggleDomain(3)"><span id="toggle-text-3">Show Components</span><span id="toggle-icon-3">▼</span></div>
+                <div class="components" id="domain-3">
+                    <div class="component" onclick="toggleComponent(event,'3-1')">
+                        <div class="comp-header"><span>IaC Baselines</span><span class="comp-arrow" id="icon-3-1">▼</span></div>
+                        <div class="details" id="detail-3-1">
+                            <div class="detail">Terraform/Bicep HIPAA modules</div>
+                            <div class="detail">Pre-approved pattern catalog</div>
+                            <div class="detail">Policy-as-code integration</div>
+                            <div class="detail">Automated CIS benchmark checks</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'3-2')">
+                        <div class="comp-header"><span>Secure CI/CD Pipelines</span><span class="comp-arrow" id="icon-3-2">▼</span></div>
+                        <div class="details" id="detail-3-2">
+                            <div class="detail">Artifact provenance attestation</div>
+                            <div class="detail">Secrets scanning & rotation jobs</div>
+                            <div class="detail">Gate for PHI data schema changes</div>
+                            <div class="detail">Infra drift detection stage</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'3-3')">
+                        <div class="comp-header"><span>Dev/Test Data Controls</span><span class="comp-arrow" id="icon-3-3">▼</span></div>
+                        <div class="details" id="detail-3-3">
+                            <div class="detail">Synthetic data generation pipeline</div>
+                            <div class="detail">Dynamic de-identification services</div>
+                            <div class="detail">Masking policies enforced at ingest</div>
+                            <div class="detail">No PHI allowed in lower env scanning</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'3-4')">
+                        <div class="comp-header"><span>Security Scanning</span><span class="comp-arrow" id="icon-3-4">▼</span></div>
+                        <div class="details" id="detail-3-4">
+                            <div class="detail">Container + SBOM vulnerability checks</div>
+                            <div class="detail">Infrastructure compliance scoring</div>
+                            <div class="detail">Secrets & key leakage detection</div>
+                            <div class="detail">FHIR API contract linting</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'3-5')">
+                        <div class="comp-header"><span>GitOps & Policy Sync</span><span class="comp-arrow" id="icon-3-5">▼</span></div>
+                        <div class="details" id="detail-3-5">
+                            <div class="detail">Declarative compliance bundles</div>
+                            <div class="detail">Automatic rollback on violation</div>
+                            <div class="detail">Cross-subscription sync engine</div>
+                            <div class="detail">Signed policy definitions</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'3-6')">
+                        <div class="comp-header"><span>Configuration Management</span><span class="comp-arrow" id="icon-3-6">▼</span></div>
+                        <div class="details" id="detail-3-6">
+                            <div class="detail">Centralized clinical app settings store</div>
+                            <div class="detail">Key Vault RBAC segregation (PHI)</div>
+                            <div class="detail">Automated rotation of encryption keys</div>
+                            <div class="detail">Versioned configuration with approvals</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Domain 4: Management & Operations -->
+            <div class="domain-card domain-4">
+                <div class="domain-header" onclick="toggleDomain(4)">
+                    <div class="domain-icon">🔧</div>
+                    <div>
+                        <div class="domain-title">Management & Operations</div>
+                        <div class="domain-sub">Reliability & Resilience</div>
+                    </div>
+                </div>
+                <div class="toggle" onclick="toggleDomain(4)"><span id="toggle-text-4">Show Components</span><span id="toggle-icon-4">▼</span></div>
+                <div class="components" id="domain-4">
+                    <div class="component" onclick="toggleComponent(event,'4-1')">
+                        <div class="comp-header"><span>Monitoring & Telemetry</span><span class="comp-arrow" id="icon-4-1">▼</span></div>
+                        <div class="details" id="detail-4-1">
+                            <div class="detail">Healthcare KPI dashboards (LOS, throughput)</div>
+                            <div class="detail">Real-time PHI access audit streams</div>
+                            <div class="detail">Clinical workflow trace correlation</div>
+                            <div class="detail">Synthetic transaction monitors</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'4-2')">
+                        <div class="comp-header"><span>Alerting & Incident</span><span class="comp-arrow" id="icon-4-2">▼</span></div>
+                        <div class="details" id="detail-4-2">
+                            <div class="detail">Privacy breach escalation paths</div>
+                            <div class="detail">On-call rotation health-critical tiers</div>
+                            <div class="detail">Automated RCA evidence capture</div>
+                            <div class="detail">Runbooks tied to SOAR actions</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'4-3')">
+                        <div class="comp-header"><span>Backup & DR</span><span class="comp-arrow" id="icon-4-3">▼</span></div>
+                        <div class="details" id="detail-4-3">
+                            <div class="detail">Immutable backups for PHI datasets</div>
+                            <div class="detail">Tiered retention (7yr regulatory)</div>
+                            <div class="detail">Quarterly DR simulation drills</div>
+                            <div class="detail">Automated failover validation</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'4-4')">
+                        <div class="comp-header"><span>Patch & Change Management</span><span class="comp-arrow" id="icon-4-4">▼</span></div>
+                        <div class="details" id="detail-4-4">
+                            <div class="detail">Health-impact change window policies</div>
+                            <div class="detail">Risk scoring for patch prioritization</div>
+                            <div class="detail">Automated pre-change compliance check</div>
+                            <div class="detail">Rollback validation automation</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'4-5')">
+                        <div class="comp-header"><span>Operational Analytics</span><span class="comp-arrow" id="icon-4-5">▼</span></div>
+                        <div class="details" id="detail-4-5">
+                            <div class="detail">Capacity forecasting for clinical loads</div>
+                            <div class="detail">Queue latency tracking (HL7)</div>
+                            <div class="detail">MTTR & SLI dashboards</div>
+                            <div class="detail">Proactive anomaly detection models</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'4-6')">
+                        <div class="comp-header"><span>ITSM & Compliance Integration</span><span class="comp-arrow" id="icon-4-6">▼</span></div>
+                        <div class="details" id="detail-4-6">
+                            <div class="detail">Automated evidence collection</div>
+                            <div class="detail">Ticket enrichment with telemetry</div>
+                            <div class="detail">SOX & HIPAA control mapping</div>
+                            <div class="detail">CMDB lineage for PHI flows</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Domain 5: Security -->
+            <div class="domain-card domain-5">
+                <div class="domain-header" onclick="toggleDomain(5)">
+                    <div class="domain-icon">🛡️</div>
+                    <div>
+                        <div class="domain-title">Security</div>
+                        <div class="domain-sub">Zero Trust & Data Protection</div>
+                    </div>
+                </div>
+                <div class="toggle" onclick="toggleDomain(5)"><span id="toggle-text-5">Show Components</span><span id="toggle-icon-5">▼</span></div>
+                <div class="components" id="domain-5">
+                    <div class="component" onclick="toggleComponent(event,'5-1')">
+                        <div class="comp-header"><span>Network Security</span><span class="comp-arrow" id="icon-5-1">▼</span></div>
+                        <div class="details" id="detail-5-1">
+                            <div class="detail">Micro-segmentation for PHI zones</div>
+                            <div class="detail">East-west traffic inspection (FHIR APIs)</div>
+                            <div class="detail">Medical device network isolation</div>
+                            <div class="detail">TLS enforcement & cipher audits</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'5-2')">
+                        <div class="comp-header"><span>Data Encryption & Privacy</span><span class="comp-arrow" id="icon-5-2">▼</span></div>
+                        <div class="details" id="detail-5-2">
+                            <div class="detail">CMK rotation schedule (PHI)</div>
+                            <div class="detail">Field-level encryption strategies</div>
+                            <div class="detail">Secure enclave for analytics</div>
+                            <div class="detail">Automatic key escrow procedures</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'5-3')">
+                        <div class="comp-header"><span>Threat Detection & Response</span><span class="comp-arrow" id="icon-5-3">▼</span></div>
+                        <div class="details" id="detail-5-3">
+                            <div class="detail">Sentinel rules for PHI exfil patterns</div>
+                            <div class="detail">ML anomaly detection on clinical access</div>
+                            <div class="detail">SOAR playbooks for high severity</div>
+                            <div class="detail">Integration with MDR services</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'5-4')">
+                        <div class="comp-header"><span>Security Baselines</span><span class="comp-arrow" id="icon-5-4">▼</span></div>
+                        <div class="details" id="detail-5-4">
+                            <div class="detail">HIPAA technical safeguard mapping</div>
+                            <div class="detail">CIS, NIST CSF baseline overlays</div>
+                            <div class="detail">Deviation exception workflow</div>
+                            <div class="detail">Automated baseline drift alerts</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'5-5')">
+                        <div class="comp-header"><span>Vulnerability & Exposure</span><span class="comp-arrow" id="icon-5-5">▼</span></div>
+                        <div class="details" id="detail-5-5">
+                            <div class="detail">Prioritized remediation per PHI impact</div>
+                            <div class="detail">Container & function scan cadence</div>
+                            <div class="detail">Exploit attempt correlation</div>
+                            <div class="detail">Pen-test evidence repository</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'5-6')">
+                        <div class="comp-header"><span>Keys & Secrets Governance</span><span class="comp-arrow" id="icon-5-6">▼</span></div>
+                        <div class="details" id="detail-5-6">
+                            <div class="detail">Managed HSM for regulated keys</div>
+                            <div class="detail">Secret version entropy validation</div>
+                            <div class="detail">Break-glass vault access auditing</div>
+                            <div class="detail">Automatic secret age enforcement</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Domain 6: Governance & Compliance -->
+            <div class="domain-card domain-6">
+                <div class="domain-header" onclick="toggleDomain(6)">
+                    <div class="domain-icon">📋</div>
+                    <div>
+                        <div class="domain-title">Governance & Compliance</div>
+                        <div class="domain-sub">Regulatory Alignment</div>
+                    </div>
+                </div>
+                <div class="toggle" onclick="toggleDomain(6)"><span id="toggle-text-6">Show Components</span><span id="toggle-icon-6">▼</span></div>
+                <div class="components" id="domain-6">
+                    <div class="component" onclick="toggleComponent(event,'6-1')">
+                        <div class="comp-header"><span>Policy Management</span><span class="comp-arrow" id="icon-6-1">▼</span></div>
+                        <div class="details" id="detail-6-1">
+                            <div class="detail">Auto-enforce PHI encryption policies</div>
+                            <div class="detail">Deny rules for unapproved regions</div>
+                            <div class="detail">Mandatory tagging remediation jobs</div>
+                            <div class="detail">Evidence linkage for audits</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'6-2')">
+                        <div class="comp-header"><span>Blueprints & Baselines</span><span class="comp-arrow" id="icon-6-2">▼</span></div>
+                        <div class="details" id="detail-6-2">
+                            <div class="detail">Preconfigured HIPAA landing sets</div>
+                            <div class="detail">Data platform governance pack</div>
+                            <div class="detail">Version-controlled blueprint releases</div>
+                            <div class="detail">Automated diff compliance check</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'6-3')">
+                        <div class="comp-header"><span>Compliance Monitoring</span><span class="comp-arrow" id="icon-6-3">▼</span></div>
+                        <div class="details" id="detail-6-3">
+                            <div class="detail">Real-time HIPAA control dashboard</div>
+                            <div class="detail">Dynamic risk scoring per asset</div>
+                            <div class="detail">Automated audit report generation</div>
+                            <div class="detail">Exception approval workflow</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'6-4')">
+                        <div class="comp-header"><span>Audit & Forensics</span><span class="comp-arrow" id="icon-6-4">▼</span></div>
+                        <div class="details" id="detail-6-4">
+                            <div class="detail">Immutable PHI access logs vault</div>
+                            <div class="detail">Chain-of-custody tracking</div>
+                            <div class="detail">Automated log retention lifecycle</div>
+                            <div class="detail">Forensic snapshot procedures</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'6-5')">
+                        <div class="comp-header"><span>Regulatory Mapping</span><span class="comp-arrow" id="icon-6-5">▼</span></div>
+                        <div class="details" id="detail-6-5">
+                            <div class="detail">HIPAA/HITECH control catalog</div>
+                            <div class="detail">GDPR health data overlays</div>
+                            <div class="detail">ISO 27001 gap tracker</div>
+                            <div class="detail">SOC 2 Type II evidence sets</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'6-6')">
+                        <div class="comp-header"><span>Data Residency & Sovereignty</span><span class="comp-arrow" id="icon-6-6">▼</span></div>
+                        <div class="details" id="detail-6-6">
+                            <div class="detail">Cross-border transfer approval logs</div>
+                            <div class="detail">Jurisdiction matrix registry</div>
+                            <div class="detail">Automated location policy enforcement</div>
+                            <div class="detail">Residency audit recon reports</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Domain 7: Finance Management -->
+            <div class="domain-card domain-7">
+                <div class="domain-header" onclick="toggleDomain(7)">
+                    <div class="domain-icon">💰</div>
+                    <div>
+                        <div class="domain-title">Finance Management</div>
+                        <div class="domain-sub">Transparency & Optimization</div>
+                    </div>
+                </div>
+                <div class="toggle" onclick="toggleDomain(7)"><span id="toggle-text-7">Show Components</span><span id="toggle-icon-7">▼</span></div>
+                <div class="components" id="domain-7">
+                    <div class="component" onclick="toggleComponent(event,'7-1')">
+                        <div class="comp-header"><span>Cost Optimization</span><span class="comp-arrow" id="icon-7-1">▼</span></div>
+                        <div class="details" id="detail-7-1">
+                            <div class="detail">Segregated PHI workload cost tracking</div>
+                            <div class="detail">Reserved compute for clinical peaks</div>
+                            <div class="detail">Idle resource quarantine workflow</div>
+                            <div class="detail">Advisor integration with compliance tags</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'7-2')">
+                        <div class="comp-header"><span>Budget & Forecasting</span><span class="comp-arrow" id="icon-7-2">▼</span></div>
+                        <div class="details" id="detail-7-2">
+                            <div class="detail">Predictive ML cost modeling</div>
+                            <div class="detail">Compliance overhead cost category</div>
+                            <div class="detail">Departmental allocation by tags</div>
+                            <div class="detail">Alert tiers for regulated workload spend</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'7-3')">
+                        <div class="comp-header"><span>Chargeback / Showback</span><span class="comp-arrow" id="icon-7-3">▼</span></div>
+                        <div class="details" id="detail-7-3">
+                            <div class="detail">Clinical service vs research cost splits</div>
+                            <div class="detail">Line-item PHI handling surcharge</div>
+                            <div class="detail">Shared service proportional allocation</div>
+                            <div class="detail">Executive dashboards & drilldowns</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'7-4')">
+                        <div class="comp-header"><span>Cost Allocation Precision</span><span class="comp-arrow" id="icon-7-4">▼</span></div>
+                        <div class="details" id="detail-7-4">
+                            <div class="detail">Tag completeness scoring</div>
+                            <div class="detail">Automated untagged spend reclassification</div>
+                            <div class="detail">Data pipeline cost segmentation</div>
+                            <div class="detail">Clinical SLA vs infra cost ratio</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'7-5')">
+                        <div class="comp-header"><span>Reserved & Savings Plans</span><span class="comp-arrow" id="icon-7-5">▼</span></div>
+                        <div class="details" id="detail-7-5">
+                            <div class="detail">Portfolio view with utilization heatmap</div>
+                            <div class="detail">Clinical workload seasonality analysis</div>
+                            <div class="detail">Automated RI purchase recommendations</div>
+                            <div class="detail">Risk scoring for commitment levels</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'7-6')">
+                        <div class="comp-header"><span>Usage & Efficiency Analytics</span><span class="comp-arrow" id="icon-7-6">▼</span></div>
+                        <div class="details" id="detail-7-6">
+                            <div class="detail">Utilization metrics by PHI classification</div>
+                            <div class="detail">Compute efficiency benchmarking</div>
+                            <div class="detail">Egress cost watch (cross-region PHI)</div>
+                            <div class="detail">Power BI lineage & chargeback model</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Domain 8: Clinical & Data Services (New) -->
+            <div class="domain-card domain-8">
+                <div class="domain-header" onclick="toggleDomain(8)">
+                    <div class="domain-icon">🩺</div>
+                    <div>
+                        <div class="domain-title">Clinical & Data Services</div>
+                        <div class="domain-sub">Interoperability & PHI Handling</div>
+                    </div>
+                </div>
+                <div class="toggle" onclick="toggleDomain(8)"><span id="toggle-text-8">Show Components</span><span id="toggle-icon-8">▼</span></div>
+                <div class="components" id="domain-8">
+                    <div class="component" onclick="toggleComponent(event,'8-1')">
+                        <div class="comp-header"><span>FHIR / HL7 Integration</span><span class="comp-arrow" id="icon-8-1">▼</span></div>
+                        <div class="details" id="detail-8-1">
+                            <div class="detail">Managed FHIR service with RBAC tiers</div>
+                            <div class="detail">HL7 message queue isolation</div>
+                            <div class="detail">Schema version governance</div>
+                            <div class="detail">API throttling & consent enforcement</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'8-2')">
+                        <div class="comp-header"><span>EHR System Integration</span><span class="comp-arrow" id="icon-8-2">▼</span></div>
+                        <div class="details" id="detail-8-2">
+                            <div class="detail">Secure connectors & audit wrappers</div>
+                            <div class="detail">Change data capture pipeline</div>
+                            <div class="detail">Dual-write validation procedures</div>
+                            <div class="detail">Latency SLO tracking for clinical ops</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'8-3')">
+                        <div class="comp-header"><span>Clinical Data Lake</span><span class="comp-arrow" id="icon-8-3">▼</span></div>
+                        <div class="details" id="detail-8-3">
+                            <div class="detail">Raw / Curated / De-Identified zones</div>
+                            <div class="detail">Metadata lineage & provenance</div>
+                            <div class="detail">PHI masking on ingestion</div>
+                            <div class="detail">Access policy per data classification</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'8-4')">
+                        <div class="comp-header"><span>Imaging & DICOM Services</span><span class="comp-arrow" id="icon-8-4">▼</span></div>
+                        <div class="details" id="detail-8-4">
+                            <div class="detail">Secure PACS integration endpoints</div>
+                            <div class="detail">DICOM header anonymization workflow</div>
+                            <div class="detail">Tiered storage lifecycle (hot/warm/archive)</div>
+                            <div class="detail">Viewer access RBAC & auditing</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'8-5')">
+                        <div class="comp-header"><span>Consent & Authorization</span><span class="comp-arrow" id="icon-8-5">▼</span></div>
+                        <div class="details" id="detail-8-5">
+                            <div class="detail">Fine-grained patient consent registry</div>
+                            <div class="detail">Real-time consent evaluation API</div>
+                            <div class="detail">Revocation propagation workflow</div>
+                            <div class="detail">Audit trail of consent decisions</div>
+                        </div>
+                    </div>
+                    <div class="component" onclick="toggleComponent(event,'8-6')">
+                        <div class="comp-header"><span>Research & Sandbox Isolation</span><span class="comp-arrow" id="icon-8-6">▼</span></div>
+                        <div class="details" id="detail-8-6">
+                            <div class="detail">De-Identification assurance service</div>
+                            <div class="detail">Temporal access tokens for datasets</div>
+                            <div class="detail">Controlled egress guardrails</div>
+                            <div class="detail">Reproducible workspace templates</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div class="controls">
+        <button class="ctrl-btn" onclick="expandAll()">EXPAND ALL</button>
+        <button class="ctrl-btn" onclick="collapseAll()">COLLAPSE ALL</button>
+        <button class="ctrl-btn" onclick="scrollToTop()">TOP</button>
+    </div>
+    <footer>© 2025 Healthcare Cloud Landing Zone | HIPAA-ready architecture reference</footer>
+    <script>
+        function toggleDomain(num){ const c=document.getElementById(`domain-${num}`); const t=document.getElementById(`toggle-text-${num}`); const i=document.getElementById(`toggle-icon-${num}`); if(c.classList.contains('active')){ c.classList.remove('active'); t.textContent='Show Components'; i.textContent='▼'; } else { c.classList.add('active'); t.textContent='Hide Components'; i.textContent='▲'; } }
+        function toggleComponent(e,id){ e.stopPropagation(); const d=document.getElementById(`detail-${id}`); const i=document.getElementById(`icon-${id}`); if(d.classList.contains('active')){ d.classList.remove('active'); i.classList.remove('rot'); } else { d.classList.add('active'); i.classList.add('rot'); } }
+        function expandAll(){ for(let i=1;i<=8;i++){ const c=document.getElementById(`domain-${i}`); const t=document.getElementById(`toggle-text-${i}`); const ic=document.getElementById(`toggle-icon-${i}`); if(c){ c.classList.add('active'); t.textContent='Hide Components'; ic.textContent='▲'; for(let j=1;j<=10;j++){ const d=document.getElementById(`detail-${i}-${j}`); const a=document.getElementById(`icon-${i}-${j}`); if(d&&a){ d.classList.add('active'); a.classList.add('rot'); } } } } }
+        function collapseAll(){ for(let i=1;i<=8;i++){ const c=document.getElementById(`domain-${i}`); const t=document.getElementById(`toggle-text-${i}`); const ic=document.getElementById(`toggle-icon-${i}`); if(c){ c.classList.remove('active'); t.textContent='Show Components'; ic.textContent='▼'; for(let j=1;j<=10;j++){ const d=document.getElementById(`detail-${i}-${j}`); const a=document.getElementById(`icon-${i}-${j}`); if(d&&a){ d.classList.remove('active'); a.classList.remove('rot'); } } } } }
+        function scrollToTop(){ window.scrollTo({top:0,behavior:'smooth'}); }
+        document.addEventListener('keydown',e=>{ if(['e','E'].includes(e.key)) expandAll(); if(['c','C'].includes(e.key)) collapseAll(); if(['t','T'].includes(e.key)) scrollToTop(); });
+    </script>
+</body>
+</html>
