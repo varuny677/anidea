@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BFSI Azure Landing Zone - Complete with ESG & Sustainability</title>
+<style>
+body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:20px;background:#0a0e27;color:#fff}
+.header{text-align:center;margin-bottom:30px}
+h1{color:#0078D4;font-size:2.5em;margin-bottom:10px}
+.subtitle{color:#50E6FF;font-size:1.2em}
+.version{background:rgba(0,120,212,0.3);display:inline-block;padding:5px 15px;border-radius:20px;margin-top:10px}
+.info{background:rgba(0,120,212,0.1);padding:20px;border-radius:10px;margin:20px 0;border-left:4px solid #0078D4}
+.info h3{color:#50E6FF;margin-top:0}
+.domains{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:20px;max-width:2400px;margin:0 auto}
+.domain{background:rgba(255,255,255,0.05);border:2px solid;border-radius:12px;padding:20px;cursor:pointer;transition:all 0.3s}
+.domain:hover{background:rgba(0,120,212,0.1);transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,120,212,0.3)}
+.domain-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.domain-icon{font-size:2em}
+.domain-title{font-size:1.3em;font-weight:bold}
+.domain-subtitle{color:#a0aec0;font-size:0.9em;margin-bottom:15px;font-style:italic}
+.components{display:none;margin-top:15px}
+.components.active{display:block}
+.component{background:rgba(0,188,242,0.05);padding:12px;margin:10px 0;border-left:3px solid #00BCF2;border-radius:6px}
+.component-title{color:#50E6FF;font-weight:600;margin-bottom:8px}
+.azure-service{color:#00BCF2;font-family:'Consolas',monospace;font-size:0.9em;padding:4px 0;display:flex;align-items:center;gap:8px}
+.azure-service::before{content:'⚡';color:#FFB900}
+.controls{position:fixed;bottom:30px;right:30px;display:flex;flex-direction:column;gap:10px;z-index:1000}
+button{background:linear-gradient(135deg,#0078D4,#0063B1);color:#fff;border:none;padding:14px 24px;border-radius:25px;cursor:pointer;font-size:1em;font-weight:600;box-shadow:0 4px 15px rgba(0,120,212,0.4);transition:all 0.3s}
+button:hover{background:linear-gradient(135deg,#0063B1,#004578);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,120,212,0.6)}
+.footer{text-align:center;margin-top:50px;padding:30px;color:#a0aec0;border-top:1px solid rgba(255,255,255,0.1)}
+/* Domain specific colors */
+.d1{border-color:#0078D4}.d1 .domain-icon{color:#0078D4}
+.d2{border-color:#50E6FF}.d2 .domain-icon{color:#50E6FF}
+.d3{border-color:#00BCF2}.d3 .domain-icon{color:#00BCF2}
+.d4{border-color:#0099BC}.d4 .domain-icon{color:#0099BC}
+.d5{border-color:#00B294}.d5 .domain-icon{color:#00B294}
+.d6{border-color:#E81123}.d6 .domain-icon{color:#E81123}
+.d7{border-color:#FFB900}.d7 .domain-icon{color:#FFB900}
+.d8{border-color:#00CC6A}.d8 .domain-icon{color:#00CC6A}
+.d9{border-color:#8764B8}.d9 .domain-icon{color:#8764B8}
+.d10{border-color:#CA5010}.d10 .domain-icon{color:#CA5010}
+.d11{border-color:#038387}.d11 .domain-icon{color:#038387}
+.d12{border-color:#004E8C}.d12 .domain-icon{color:#004E8C}
+.d13{border-color:#8E8CD8}.d13 .domain-icon{color:#8E8CD8}
+.d14{border-color:#107C10}.d14 .domain-icon{color:#107C10}
+.d15{border-color:#D13438}.d15 .domain-icon{color:#D13438}
+.d16{border-color:#881798}.d16 .domain-icon{color:#881798}
+.d17{border-color:#00A4EF}.d17 .domain-icon{color:#00A4EF}
+.d18{border-color:#FF8C00}.d18 .domain-icon{color:#FF8C00}
+.d19{border-color:#00188F}.d19 .domain-icon{color:#00188F}
+.d20{border-color:#68217A}.d20 .domain-icon{color:#68217A}
+.d21{border-color:#10893E}.d21 .domain-icon{color:#10893E}
+.esg-highlight{background:linear-gradient(135deg,rgba(16,137,62,0.2),rgba(0,204,106,0.2));border-color:#10893E!important;box-shadow:0 0 20px rgba(16,137,62,0.3)}
+@media(max-width:768px){.domains{grid-template-columns:1fr}.controls{bottom:15px;right:15px}button{padding:10px 18px;font-size:0.9em}}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>🏦 BFSI Azure Landing Zone</h1>
+<p class="subtitle">Complete 21-Domain Framework with ESG & Sustainability</p>
+<span class="version">Azure Edition v2.0 | With ESG</span>
+</div>
+
+<div class="info">
+<h3>📖 How to Use This Framework</h3>
+<p><strong>Interactive:</strong> Click on any domain card to expand and view Azure service mappings for each component.</p>
+<p><strong>ESG Focus:</strong> New dedicated domain for Environmental, Social, and Governance requirements with Azure sustainability services.</p>
+<p><strong>Export:</strong> Download complete mappings as CSV or JSON using the buttons at the bottom-right.</p>
+</div>
+
+<div class="domains" id="domains"></div>
+
+<div class="controls">
+<button onclick="exportCSV()">📊 Export CSV</button>
+<button onclick="exportJSON()">📋 Export JSON</button>
+<button onclick="expandAll()">📂 Expand All</button>
+<button onclick="collapseAll()">📁 Collapse All</button>
+<button onclick="scrollToTop()">⬆️ Top</button>
+</div>
+
+<div class="footer">
+<p><strong>BFSI Cloud Landing Zone - Azure Services Mapping v2.0</strong></p>
+<p>Complete Framework for Banking, Financial Services & Insurance with ESG & Sustainability</p>
+<p style="margin-top:15px;font-size:0.9em">© 2025 BFSI Cloud Architecture | Microsoft Azure Landing Zones</p>
+</div>
+
+<script>
+const domainData = {
+  "Resource Organization": {
+    icon: "📁",
+    subtitle: "Structure & Hierarchy for Financial Services",
+    class: "d1",
+    components: {
+      "Account Structure & Hierarchy": [
+        "Azure Management Groups",
+        "Management Group Hierarchy",
+        "Azure Subscriptions (by business unit)",
+        "Subscription-level isolation"
+      ],
+      "Environment Architecture": [
+        "Azure Subscriptions (Production tier)",
+        "Azure Subscriptions (Pre-Prod/UAT)",
+        "Azure Dev/Test Subscriptions",
+        "PCI-DSS isolated subscriptions + Network Security"
+      ],
+      "Tagging Strategy for BFSI": [
+        "Azure Tags (CostCenter, BusinessUnit, Owner)",
+        "Azure Tags (DataClassification: PII, PCI, Confidential)",
+        "Azure Tags (Compliance: SOX, Basel, GDPR)",
+        "Azure Policy (Require tags enforcement)"
+      ]
+    }
+  },
+  "Identity & Access Management": {
+    icon: "👤",
+    subtitle: "MFA, CIAM, PAM, Segregation of Duties",
+    class: "d2",
+    components: {
+      "Enterprise Directory Services": [
+        "Microsoft Entra ID (Azure AD)",
+        "Microsoft Entra ID + Identity Governance",
+        "Azure AD Connect + ADFS",
+        "Managed Identities for Azure Resources"
+      ],
+      "Privileged Access Management (PAM)": [
+        "Microsoft Entra Privileged Identity Management (PIM)",
+        "Azure PIM (Time-limited role activation)",
+        "Azure PIM Approval Workflows",
+        "Azure PIM + Azure Monitor Logs",
+        "Microsoft Entra Access Reviews"
+      ],
+      "Multi-Factor Authentication (MFA)": [
+        "Azure MFA (OATH tokens, FIDO2 keys)",
+        "Windows Hello for Business + Azure AD",
+        "Microsoft Authenticator App",
+        "Azure AD Passwordless (FIDO2, Phone Sign-in)"
+      ],
+      "Customer Identity (CIAM)": [
+        "Azure AD B2C",
+        "Azure AD B2C + Custom Policies",
+        "Azure AD B2C (Social Identity Providers)",
+        "Azure AD B2C + Custom Attributes"
+      ],
+      "Conditional Access": [
+        "Azure AD Conditional Access (Named Locations)",
+        "Azure AD Conditional Access + Microsoft Intune",
+        "Azure AD Identity Protection",
+        "Azure AD Conditional Access Session Controls"
+      ]
+    }
+  },
+  "Application Modernization & DevSecOps": {
+    icon: "⚙️",
+    subtitle: "Secure CI/CD, Containers, Infrastructure as Code",
+    class: "d3",
+    components: {
+      "Infrastructure as Code": [
+        "Azure Bicep / ARM Templates / Terraform",
+        "Azure Template Specs / Bicep Modules",
+        "Azure DevOps Repos / GitHub",
+        "Azure Storage (for Terraform State)"
+      ],
+      "CI/CD Pipeline": [
+        "Azure Repos / GitHub",
+        "Azure Pipelines (Build Pipelines)",
+        "Azure Test Plans + Azure Pipelines",
+        "Azure Pipelines (Release Pipelines)",
+        "Azure App Service Deployment Slots"
+      ],
+      "Container & Orchestration": [
+        "Azure Kubernetes Service (AKS)",
+        "Azure Container Registry (ACR)",
+        "Azure Service Mesh (Istio on AKS)",
+        "Microsoft Defender for Containers",
+        "Azure Policy for AKS"
+      ],
+      "Security Testing": [
+        "GitHub Advanced Security / SonarQube",
+        "Third-party DAST in Azure Pipelines",
+        "GitHub Dependabot / WhiteSource",
+        "Microsoft Defender for DevOps",
+        "GitHub Secret Scanning"
+      ]
+    }
+  },
+  "Management & Operations": {
+    icon: "🔧",
+    subtitle: "Monitoring & Maintenance for Financial Systems",
+    class: "d4",
+    components: {
+      "Observability & Monitoring": [
+        "Azure Monitor Logs (Log Analytics)",
+        "Azure Monitor + Application Insights",
+        "Azure Application Insights",
+        "Azure Monitor Metrics",
+        "Application Insights Distributed Tracing"
+      ],
+      "Backup & Disaster Recovery": [
+        "Azure Backup",
+        "Azure Site Recovery (ASR)",
+        "Azure Site Recovery + Backup Policies",
+        "Azure Site Recovery Plans",
+        "Azure Site Recovery Test Failover"
+      ],
+      "Patch Management": [
+        "Azure Update Management",
+        "Azure Policy + Update Management",
+        "Azure Update Management Schedules"
+      ],
+      "ITSM Integration": [
+        "Azure Monitor + ServiceNow Connector",
+        "Azure Logic Apps + ITSM Integration",
+        "Azure Resource Graph + ITSM Tools"
+      ]
+    }
+  },
+  "Financial Data Security & Encryption": {
+    icon: "🔐",
+    subtitle: "HSM, Tokenization, Data Loss Prevention",
+    class: "d5",
+    components: {
+      "Encryption Management": [
+        "Azure Storage Service Encryption / TDE",
+        "Azure TLS 1.3 / HTTPS Enforcement",
+        "Always Encrypted (SQL Database)",
+        "Azure Key Vault (Customer-Managed Keys)"
+      ],
+      "Hardware Security Module (HSM)": [
+        "Azure Dedicated HSM",
+        "Azure Dedicated HSM (FIPS 140-2 Level 3)",
+        "Azure Key Vault (Premium/Managed HSM)",
+        "Azure Payment HSM"
+      ],
+      "Data Loss Prevention (DLP)": [
+        "Microsoft Purview Data Classification",
+        "Microsoft Purview Sensitive Info Types",
+        "Microsoft Purview DLP Policies",
+        "Microsoft Defender for Cloud Apps + DLP"
+      ],
+      "Tokenization Services": [
+        "Azure Confidential Ledger + Custom Service",
+        "Azure Functions + Key Vault",
+        "Azure Cosmos DB + Encryption"
+      ],
+      "Data Masking": [
+        "Azure SQL Database Dynamic Data Masking",
+        "Azure Data Factory + Custom Masking Logic",
+        "Azure Functions + Hashing Algorithms"
+      ],
+      "Secrets Management": [
+        "Azure Key Vault",
+        "Azure Key Vault Secrets",
+        "Azure Key Vault Certificates",
+        "Azure Key Vault + Azure Automation"
+      ]
+    }
+  },
+  "Regulatory Compliance & Governance": {
+    icon: "⚖️",
+    subtitle: "Basel, PCI-DSS, SOX, AML, KYC",
+    class: "d6",
+    components: {
+      "Regulatory Framework Management": [
+        "Azure Policy + Compliance Manager",
+        "Microsoft Defender for Cloud (PCI-DSS Assessment)",
+        "Azure Policy + Activity Logs",
+        "Microsoft Purview + Compliance Manager",
+        "Azure Compliance Offerings (Region-specific)"
+      ],
+      "Policy Management": [
+        "Azure Policy",
+        "Azure Policy (Deny/Audit/DeployIfNotExists)",
+        "Azure Policy Compliance Dashboard",
+        "Azure Policy Remediation Tasks"
+      ],
+      "Audit & Reporting": [
+        "Azure Activity Logs + Diagnostic Settings",
+        "Azure Monitor Workbooks + Power BI",
+        "Azure Monitor Logs (Immutable Storage)",
+        "Microsoft Purview Compliance Manager"
+      ],
+      "Data Residency & Sovereignty": [
+        "Azure Policy (Allowed Locations)",
+        "Azure Private Link + VNet Service Endpoints",
+        "Azure Regions + Availability Zones",
+        "Azure Government / Azure China / Azure Germany"
+      ]
+    }
+  },
+  "Cost Management & FinOps": {
+    icon: "💰",
+    subtitle: "Budget Controls, Optimization, Chargeback",
+    class: "d7",
+    components: {
+      "Cost Optimization": [
+        "Azure Advisor",
+        "Azure Cost Management + Advisor",
+        "Azure Cost Management (Cost Anomalies)",
+        "Azure Reservations + Advisor"
+      ],
+      "Budget Controls": [
+        "Azure Cost Management Budgets",
+        "Azure Budget Alerts",
+        "Azure Cost Analysis",
+        "Azure Cost Management Forecasts"
+      ],
+      "Chargeback & Showback": [
+        "Azure Cost Management (Views by Tags)",
+        "Azure Cost Management + Power BI",
+        "Azure Cost Allocation Rules"
+      ],
+      "Commitment Discounts": [
+        "Azure Reservations (VMs, SQL, Cosmos DB)",
+        "Azure Savings Plans for Compute",
+        "Azure Reservation Utilization Reports"
+      ]
+    }
+  },
+  "Network Architecture & Connectivity": {
+    icon: "🌐",
+    subtitle: "Payment Zones, API Gateways, Hybrid Connectivity",
+    class: "d8",
+    components: {
+      "Hub & Spoke Topology": [
+        "Azure Virtual Network (Hub VNet)",
+        "Azure Virtual Networks (Spoke VNets)",
+        "Azure VNet Peering",
+        "Azure Virtual WAN / Azure Firewall",
+        "Azure Network Security Groups (NSGs)"
+      ],
+      "Hybrid Connectivity": [
+        "Azure ExpressRoute",
+        "Azure VPN Gateway",
+        "Azure P2S VPN Gateway",
+        "Azure DNS Private Resolver",
+        "Azure Virtual WAN"
+      ],
+      "Payment Network Zones": [
+        "Isolated Azure VNet + NSG + Azure Firewall",
+        "Azure Network Virtual Appliances (NVAs)",
+        "Azure Subnets + NSGs + ASGs"
+      ],
+      "Network Security": [
+        "Azure Firewall Premium",
+        "Azure WAF (Application Gateway / Front Door)",
+        "Azure Network Security Groups (NSGs)",
+        "Azure Firewall Premium (IDPS)",
+        "Azure DDoS Protection Standard"
+      ],
+      "API Gateway": [
+        "Azure API Management",
+        "Azure APIM (Rate Limit Policies)",
+        "Azure APIM + Azure AD OAuth",
+        "Azure APIM Analytics + Application Insights",
+        "Azure APIM Developer Portal"
+      ]
+    }
+  },
+  "Core Banking & Financial Systems Integration": {
+    icon: "🏧",
+    subtitle: "SWIFT, Payment Processing, Financial Messaging",
+    class: "d9",
+    components: {
+      "Core Banking Integration": [
+        "Azure ExpressRoute + On-premises Data Gateway",
+        "Azure Logic Apps + Integration Runtime",
+        "Azure Event Hubs + Stream Analytics",
+        "Azure Data Factory + Azure Batch",
+        "Azure API Management + Service Bus"
+      ],
+      "Payment Processing": [
+        "Azure API Management + Azure Functions",
+        "Azure Payment HSM + Isolated VNets",
+        "Azure Service Bus + Durable Functions",
+        "Azure Event Hubs + Cosmos DB",
+        "Azure AD B2C + API Management",
+        "Azure Logic Apps + SWIFT Connector"
+      ],
+      "SWIFT & Financial Messaging": [
+        "Azure ExpressRoute (Direct to SWIFT)",
+        "Azure Integration Services + Liquid Templates",
+        "Azure Logic Apps + XML/JSON Validation",
+        "Azure Blob Storage (Immutable)",
+        "Azure Durable Functions + Service Bus"
+      ],
+      "Middleware & Integration": [
+        "Azure Service Bus Premium",
+        "Azure Queue Storage / Service Bus",
+        "Azure Event Hubs / Event Grid",
+        "Azure Logic Apps / Durable Functions",
+        "Azure Data Factory + Mapping Data Flows"
+      ]
+    }
+  },
+  "Risk Management & Fraud Detection": {
+    icon: "🛡️",
+    subtitle: "Real-time Monitoring, AML, Transaction Screening",
+    class: "d10",
+    components: {
+      "Fraud Detection Systems": [
+        "Azure Stream Analytics + Event Hubs",
+        "Azure Anomaly Detector (Cognitive Services)",
+        "Azure Machine Learning",
+        "Azure Synapse Analytics + ML",
+        "Azure Functions + Cosmos DB",
+        "Azure Rules Engine / Logic Apps"
+      ],
+      "AML & Financial Crime": [
+        "Azure Cognitive Search + Custom ML Models",
+        "Azure Functions + Third-party APIs",
+        "Azure Logic Apps + Storage",
+        "Azure ML + Synapse Analytics",
+        "Power Apps + Dataverse",
+        "Azure Data Factory + Reporting Services"
+      ],
+      "Risk Assessment": [
+        "Azure Machine Learning",
+        "Azure Synapse Analytics + Power BI",
+        "Azure Databricks + Delta Lake",
+        "Azure SQL Database + Analysis Services"
+      ],
+      "Case Management": [
+        "Azure Logic Apps + Cosmos DB",
+        "Power Apps + Power Automate",
+        "Dynamics 365 Customer Service",
+        "Azure ML + Feedback Loops"
+      ]
+    }
+  },
+  "Data Management & Analytics": {
+    icon: "📊",
+    subtitle: "Financial Analytics, Credit Scoring, BI Platforms",
+    class: "d11",
+    components: {
+      "Data Lake & Warehouse": [
+        "Azure Data Lake Storage Gen2",
+        "Azure Synapse Analytics (Dedicated SQL Pool)",
+        "Azure Databricks + Delta Lake",
+        "Microsoft Purview Data Catalog",
+        "Microsoft Purview"
+      ],
+      "Data Integration & ETL": [
+        "Azure Data Factory",
+        "Azure Stream Analytics + Event Hubs",
+        "Azure SQL CDC + Data Factory",
+        "Azure Data Share / Synapse Link",
+        "Azure Data Factory Data Flows",
+        "Microsoft Purview + Custom Solutions"
+      ],
+      "Business Intelligence": [
+        "Power BI Premium",
+        "Power BI Dashboards",
+        "Power BI Paginated Reports",
+        "Power BI + Azure Analysis Services",
+        "Azure Synapse Serverless SQL Pool"
+      ],
+      "Advanced Analytics & AI/ML": [
+        "Azure Machine Learning",
+        "Azure ML + Synapse Analytics",
+        "Azure ML AutoML",
+        "Azure ML + Responsible AI Dashboard",
+        "Azure Cognitive Services (Language)",
+        "Azure Form Recognizer / Document Intelligence",
+        "Azure ML Managed Endpoints"
+      ],
+      "Data Governance": [
+        "Microsoft Purview Data Lineage",
+        "Microsoft Purview Sensitivity Labels",
+        "Azure Policy + Storage Lifecycle",
+        "Azure RBAC + Purview Policies"
+      ]
+    }
+  },
+  "Business Continuity & Disaster Recovery": {
+    icon: "🔄",
+    subtitle: "RTO/RPO, High Availability, Failover Orchestration",
+    class: "d12",
+    components: {
+      "Backup & Recovery": [
+        "Azure Backup (VMs, SQL, Files)",
+        "Azure SQL PITR / Cosmos DB Continuous Backup",
+        "Azure Backup (GRS/GZRS)",
+        "Azure Backup Policies",
+        "Azure Backup Encryption",
+        "Azure Site Recovery Test Failover"
+      ],
+      "High Availability": [
+        "Azure Availability Zones",
+        "Azure Traffic Manager + Multi-region",
+        "Azure Load Balancer + VM Scale Sets",
+        "Azure Autoscale / VMSS",
+        "Azure Monitor + Load Balancer Probes"
+      ],
+      "DR Planning": [
+        "Azure Site Recovery SLA",
+        "Azure Site Recovery",
+        "Azure Automation Runbooks",
+        "ASR Test Failover",
+        "Azure Site Recovery Plans",
+        "Azure Site Recovery Failback"
+      ],
+      "Resilience Testing": [
+        "Azure Chaos Studio",
+        "Azure Site Recovery Test Failover",
+        "Azure Load Testing",
+        "Azure Monitor + Custom Scripts"
+      ]
+    }
+  },
+  "Monitoring, Logging & Observability": {
+    icon: "📈",
+    subtitle: "SIEM, APM, Compliance Logs, Distributed Tracing",
+    class: "d13",
+    components: {
+      "Centralized Logging": [
+        "Azure Monitor Logs (Log Analytics Workspace)",
+        "Application Insights + Serilog/NLog",
+        "Log Analytics Workspace Retention",
+        "Kusto Query Language (KQL)",
+        "Azure Monitor Logs (Immutable Storage)"
+      ],
+      "Application Performance Monitoring": [
+        "Application Insights (Browser SDK)",
+        "Application Insights Distributed Tracing",
+        "Application Insights Application Map",
+        "Application Insights Profiler",
+        "Application Insights Availability Tests"
+      ],
+      "SIEM": [
+        "Microsoft Sentinel",
+        "Microsoft Sentinel Threat Intelligence",
+        "Microsoft Sentinel ML-based Detection",
+        "Microsoft Sentinel Investigation Graph",
+        "Microsoft Sentinel Workbooks"
+      ],
+      "Distributed Tracing": [
+        "Application Insights + OpenTelemetry",
+        "Application Insights Dependency Tracking",
+        "Application Insights Performance Blade",
+        "Application Insights Failures"
+      ],
+      "Alerting": [
+        "Azure Monitor Action Groups",
+        "Azure Monitor Alert Rules",
+        "Azure Monitor Smart Groups",
+        "Azure Monitor Action Groups + Logic Apps"
+      ]
+    }
+  },
+  "Digital Banking & Customer Experience": {
+    icon: "📱",
+    subtitle: "Open Banking, Omnichannel, Digital Onboarding",
+    class: "d14",
+    components: {
+      "Omnichannel Platform": [
+        "Azure App Service Mobile Apps + Xamarin",
+        "Azure App Service + Azure Front Door",
+        "Azure API Management + On-premises Gateway",
+        "Azure IoT Hub + Edge",
+        "Dynamics 365 Customer Service + Azure Communication Services"
+      ],
+      "Customer Engagement": [
+        "Azure Personalizer (Cognitive Services)",
+        "Azure ML Recommendation System",
+        "Dynamics 365 Marketing",
+        "Dynamics 365 Customer Insights + Power Automate",
+        "Azure AD B2C + Cosmos DB"
+      ],
+      "Conversational AI": [
+        "Azure Bot Service + Language Understanding (LUIS)",
+        "Azure Cognitive Services Language",
+        "LUIS + QnA Maker",
+        "Azure Bot Service + Power Virtual Agents",
+        "Azure Speech Services"
+      ],
+      "Digital Onboarding": [
+        "Azure AD B2C + Custom Policies",
+        "Azure Form Recognizer + Face API",
+        "Azure Document Intelligence + Computer Vision",
+        "Azure Trusted Signing / DocuSign Integration",
+        "Azure Functions + Service Bus"
+      ],
+      "Open Banking": [
+        "Azure API Management (External APIs)",
+        "Azure API Management + OAuth 2.0",
+        "Azure AD B2C Consent Framework",
+        "Azure API Management Developer Portal",
+        "Azure API Management + Microservices"
+      ]
+    }
+  },
+  "Threat Protection & Defense": {
+    icon: "🛡️",
+    subtitle: "Advanced Security Controls & Response",
+    class: "d15",
+    components: {
+      "Threat Detection": [
+        "Microsoft Defender for Cloud",
+        "Microsoft Defender Threat Intelligence",
+        "Microsoft Sentinel UEBA",
+        "Microsoft Sentinel Automation (Playbooks)",
+        "Microsoft Sentinel Hunting Queries"
+      ],
+      "Security Baselines": [
+        "Microsoft Defender for Cloud (CIS Assessments)",
+        "Microsoft Defender for Cloud (PCI Compliance)",
+        "Azure Policy Guest Configuration",
+        "Microsoft Defender for SQL",
+        "Microsoft Defender for App Service"
+      ],
+      "Vulnerability Management": [
+        "Microsoft Defender for Cloud (Vulnerability Assessment)",
+        "Microsoft Defender Vulnerability Management",
+        "Microsoft Defender for Cloud Recommendations"
+      ],
+      "Zero Trust": [
+        "Azure AD Conditional Access",
+        "Microsoft Intune + Conditional Access",
+        "Azure Firewall + NSG",
+        "Azure RBAC + PIM",
+        "Azure AD Continuous Access Evaluation"
+      ]
+    }
+  },
+  "Database Management": {
+    icon: "🗄️",
+    subtitle: "Relational, NoSQL, Data Platforms",
+    class: "d16",
+    components: {
+      "Relational Databases": [
+        "Azure SQL Database / Azure SQL Managed Instance",
+        "Azure SQL Active Geo-Replication / Failover Groups",
+        "Azure SQL Read Scale-Out",
+        "Azure SQL Automated Backups + PITR",
+        "Azure SQL Intelligent Performance"
+      ],
+      "NoSQL & Document Databases": [
+        "Azure Cosmos DB",
+        "Azure Cosmos DB (Key-Value API)",
+        "Azure Cosmos DB (Cassandra API)",
+        "Azure Cosmos DB (Gremlin API)",
+        "Azure Cosmos DB Multi-region Writes"
+      ],
+      "Database Security": [
+        "Azure SQL TDE / Always Encrypted",
+        "Azure SQL Row-Level Security / Dynamic Data Masking",
+        "Azure SQL Auditing + Log Analytics",
+        "Microsoft Defender for SQL"
+      ],
+      "Performance Optimization": [
+        "Azure SQL Query Performance Insights",
+        "Azure SQL Index Advisor",
+        "Azure SQL Connection Pooling",
+        "Azure Cache for Redis",
+        "Azure SQL Insights"
+      ]
+    }
+  },
+  "Compute & Container Services": {
+    icon: "⚡",
+    subtitle: "Virtual Machines, Containers, Serverless",
+    class: "d17",
+    components: {
+      "Virtual Machines": [
+        "Azure Virtual Machines",
+        "Azure Virtual Machine Scale Sets",
+        "Azure VM Families (D, E, F, M series)",
+        "Azure Compute Gallery (Shared Image Gallery)",
+        "Azure Spot Virtual Machines"
+      ],
+      "Container Orchestration": [
+        "Azure Kubernetes Service (AKS)",
+        "AKS Cluster Autoscaler",
+        "Kubernetes Service Discovery",
+        "AKS Deployment Strategies",
+        "AKS Resource Quotas"
+      ],
+      "Serverless Computing": [
+        "Azure Functions",
+        "Azure Functions (Event Grid, Service Bus Triggers)",
+        "Azure Durable Functions",
+        "Azure Functions + API Management",
+        "Azure Functions Consumption Plan"
+      ],
+      "Batch Processing": [
+        "Azure Batch",
+        "Azure Functions (Queue Triggers)",
+        "Azure Data Factory + Azure Batch",
+        "Azure Batch Multi-instance Tasks"
+      ]
+    }
+  },
+  "Storage Services": {
+    icon: "💾",
+    subtitle: "Object, Block, File Storage Solutions",
+    class: "d18",
+    components: {
+      "Object Storage": [
+        "Azure Blob Storage",
+        "Azure Blob Storage Lifecycle Policies",
+        "Hot, Cool, Archive tiers",
+        "Azure Blob Versioning",
+        "Azure Blob Immutable Storage (WORM)"
+      ],
+      "Block Storage": [
+        "Azure Managed Disks",
+        "Premium SSD, Ultra Disk",
+        "Azure Disk Snapshots",
+        "Azure Disk Encryption (SSE + CMK)",
+        "Ultra Disk / Premium SSD v2"
+      ],
+      "File Storage": [
+        "Azure Files",
+        "SMB, NFS (Azure Files Premium)",
+        "Azure Files Share Mounting",
+        "Azure File Sync",
+        "Azure Backup for Azure Files"
+      ],
+      "Archive Storage": [
+        "Azure Blob Archive Tier",
+        "Azure Immutable Storage + Legal Hold",
+        "Azure Archive Storage Pricing",
+        "Standard, High Priority Retrieval"
+      ]
+    }
+  },
+  "Messaging & Integration": {
+    icon: "📨",
+    subtitle: "Message Queues, Event Streaming, ESB",
+    class: "d19",
+    components: {
+      "Message Queuing": [
+        "Azure Service Bus / Azure Queue Storage",
+        "Azure Service Bus Sessions",
+        "Azure Service Bus Dead-letter Queues",
+        "Azure Service Bus TTL"
+      ],
+      "Event Streaming": [
+        "Azure Event Hubs",
+        "Azure Event Hubs Capture + Cosmos DB",
+        "Azure Stream Analytics",
+        "Azure Event Hubs Retention",
+        "Azure Event Hubs Consumer Groups"
+      ],
+      "Enterprise Messaging": [
+        "Azure Service Bus Premium",
+        "Azure Service Bus Topics",
+        "Azure Service Bus Filters",
+        "Azure Service Bus Transactions",
+        "Azure Service Bus Duplicate Detection"
+      ],
+      "Workflow Orchestration": [
+        "Azure Logic Apps / Durable Functions",
+        "Azure Logic Apps Designer",
+        "Logic Apps Exception Handling",
+        "Azure Durable Functions",
+        "Logic Apps + Microsoft Teams / Approvals"
+      ]
+    }
+  },
+  "Migration & Modernization": {
+    icon: "🚀",
+    subtitle: "Cloud Migration, Legacy Modernization",
+    class: "d20",
+    components: {
+      "Migration Strategy": [
+        "Azure Migrate Assessment Tools",
+        "Azure Migration Program (6Rs framework)",
+        "Azure TCO Calculator + Pricing Calculator",
+        "Azure Migrate + Migration Projects",
+        "Azure Migrate Dependency Analysis"
+      ],
+      "Workload Migration": [
+        "Azure Migrate: Server Migration",
+        "Azure Database Migration Service",
+        "Azure Data Box / Azure Import Export",
+        "Azure Migrate: Discovery and Assessment",
+        "Azure Migrate Replication + Failover"
+      ],
+      "Legacy Modernization": [
+        "Azure Mainframe Rehosting / Azure Arc",
+        "Azure Service Fabric / AKS",
+        "Azure API Management + Legacy Backend",
+        "Azure API Management + Logic Apps",
+        "Azure DevOps + GitHub Copilot"
+      ],
+      "Data Migration": [
+        "Azure Database Migration Service Assessment",
+        "Azure Data Factory",
+        "Azure Data Factory Data Flows + Validation",
+        "Azure Database Migration Service (Online Mode)"
+      ]
+    }
+  },
+  "ESG & Sustainability": {
+    icon: "🌱",
+    subtitle: "Environmental, Social & Governance for Financial Services",
+    class: "d21 esg-highlight",
+    components: {
+      "Carbon Footprint & Emissions Tracking": [
+        "Microsoft Sustainability Manager",
+        "Azure Carbon Optimization",
+        "Power BI Sustainability Dashboards",
+        "Microsoft Cloud for Sustainability",
+        "Azure Monitor (Resource consumption metrics)",
+        "Azure Advisor (Sustainability recommendations)"
+      ],
+      "Energy Efficiency & Green Computing": [
+        "Azure Carbon Aware API",
+        "Azure Spot VMs (for non-critical workloads)",
+        "Azure Reserved Instances (capacity optimization)",
+        "Azure Autoscale (right-sizing)",
+        "Azure Functions Consumption Plan (serverless)",
+        "Azure Policy (enforce sustainability controls)"
+      ],
+      "Sustainable Architecture & Design": [
+        "Azure Well-Architected Framework (Sustainability pillar)",
+        "Azure Architecture Center (Green patterns)",
+        "Azure Advisor (Efficiency recommendations)",
+        "Azure Cost Management (Resource optimization)",
+        "Multi-region deployment optimization",
+        "Workload scheduling for off-peak hours"
+      ],
+      "ESG Reporting & Compliance": [
+        "Microsoft Sustainability Manager (ESG reporting)",
+        "Power BI ESG Reporting Templates",
+        "Azure Purview (ESG data governance)",
+        "Azure Monitor Logs (Sustainability metrics)",
+        "Microsoft Compliance Manager (ESG standards)",
+        "Azure Data Factory (ESG data aggregation)"
+      ],
+      "Renewable Energy & Data Center Selection": [
+        "Azure Regions (Renewable energy powered)",
+        "Azure Availability Zones (region selection)",
+        "Azure Carbon Aware Workload Scheduling",
+        "Azure Sustainable Regions (100% renewable)",
+        "Azure Policy (Preferred region enforcement)"
+      ],
+      "Social & Governance Controls": [
+        "Microsoft Purview (Data governance)",
+        "Azure AD (Diversity & inclusion policies)",
+        "Azure Policy (Governance enforcement)",
+        "Microsoft Compliance Manager (Social responsibility)",
+        "Azure RBAC (Access governance)",
+        "Microsoft Supplier Diversity Program integration"
+      ],
+      "Circular Economy & Resource Optimization": [
+        "Azure Resource Graph (Asset inventory)",
+        "Azure Cost Management (Waste reduction)",
+        "Azure Advisor (Resource rightsizing)",
+        "Azure Policy (Prevent resource sprawl)",
+        "Azure Automation (Idle resource shutdown)",
+        "Azure Storage Lifecycle Management"
+      ],
+      "Green FinTech & Sustainable Banking": [
+        "Azure Synapse Analytics (ESG data analytics)",
+        "Azure ML (Green investment scoring)",
+        "Power BI (Sustainable portfolio tracking)",
+        "Azure Cosmos DB (ESG data storage)",
+        "Azure API Management (Green finance APIs)",
+        "Microsoft Cloud for Sustainability (Financial services)"
+      ],
+      "Climate Risk Assessment": [
+        "Azure Machine Learning (Climate risk models)",
+        "Azure Synapse Analytics (Climate data analysis)",
+        "Azure Digital Twins (Physical asset risk modeling)",
+        "Azure Maps (Geographic risk assessment)",
+        "Power BI (Climate risk dashboards)"
+      ],
+      "Sustainable Supply Chain": [
+        "Microsoft Supply Chain Center",
+        "Azure Blockchain Service (Supply chain transparency)",
+        "Azure IoT (Asset tracking & optimization)",
+        "Microsoft Purview (Supply chain data governance)",
+        "Power BI (Supplier sustainability tracking)"
+      ]
+    }
+  }
+};
+
+// Render domains
+const container = document.getElementById('domains');
+Object.keys(domainData).forEach((domainName, idx) => {
+  const domain = domainData[domainName];
+  const card = document.createElement('div');
+  card.className = `domain ${domain.class}`;
+  card.innerHTML = `
+    <div class="domain-header">
+      <div class="domain-icon">${domain.icon}</div>
+      <div class="domain-title">${domainName}</div>
+    </div>
+    <div class="domain-subtitle">${domain.subtitle}</div>
+    <div class="components" id="comp-${idx}"></div>
+  `;
+  
+  const componentsDiv = card.querySelector('.components');
+  Object.keys(domain.components).forEach(compName => {
+    const comp = document.createElement('div');
+    comp.className = 'component';
+    comp.innerHTML = `<div class="component-title">${compName}</div>`;
+    domain.components[compName].forEach(service => {
+      const svc = document.createElement('div');
+      svc.className = 'azure-service';
+      svc.textContent = service;
+      comp.appendChild(svc);
+    });
+    componentsDiv.appendChild(comp);
+  });
+  
+  card.onclick = () => {
+    componentsDiv.classList.toggle('active');
+  };
+  
+  container.appendChild(card);
+});
+
+// Controls
+function expandAll() {
+  document.querySelectorAll('.components').forEach(c => c.classList.add('active'));
+}
+
+function collapseAll() {
+  document.querySelectorAll('.components').forEach(c => c.classList.remove('active'));
+}
+
+function scrollToTop() {
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function exportCSV() {
+  let csv = 'Domain,Component,Azure Service\n';
+  Object.keys(domainData).forEach(domainName => {
+    const domain = domainData[domainName];
+    Object.keys(domain.components).forEach(compName => {
+      domain.components[compName].forEach(service => {
+        csv += `"${domainName}","${compName}","${service}"\n`;
+      });
+    });
+  });
+  downloadFile('bfsi-azure-landing-zone-with-esg.csv', csv, 'text/csv');
+}
+
+function exportJSON() {
+  const exportData = {};
+  Object.keys(domainData).forEach(domainName => {
+    exportData[domainName] = {
+      subtitle: domainData[domainName].subtitle,
+      components: domainData[domainName].components
+    };
+  });
+  const json = JSON.stringify(exportData, null, 2);
+  downloadFile('bfsi-azure-landing-zone-with-esg.json', json, 'application/json');
+}
+
+function downloadFile(filename, content, type) {
+  const blob = new Blob([content], {type: type});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

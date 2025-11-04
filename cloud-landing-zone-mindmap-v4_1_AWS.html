@@ -1,0 +1,2892 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Cloud Landing Zone Service Mapper</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 2px solid rgba(255, 159, 64, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #FF9F40, #FF6B35, #F7931E);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            color: #a0aec0;
+            margin-bottom: 10px;
+        }
+
+        .export-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .export-btn {
+            background: linear-gradient(135deg, #FF9F40, #FF6B35);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(255, 159, 64, 0.3);
+        }
+
+        .export-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 159, 64, 0.5);
+        }
+
+        .domains-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .domain-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 2px solid;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            transition: all 0.4s ease;
+        }
+
+        .domain-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+        }
+
+        .domain-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 10px;
+            transition: background 0.3s ease;
+        }
+
+        .domain-header:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .domain-icon {
+            font-size: 2.5em;
+        }
+
+        .domain-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: white;
+        }
+
+        .toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            color: white;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .toggle-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.05);
+        }
+
+        .components-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.6s ease, opacity 0.6s ease;
+            opacity: 0;
+        }
+
+        .components-container.active {
+            max-height: 5000px;
+            opacity: 1;
+        }
+
+        .component-item {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(5px);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .component-item:hover {
+            background: rgba(255,255,255,0.12);
+        }
+
+        .component-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1em;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .component-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .component-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .services-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, opacity 0.4s ease, margin-top 0.4s ease;
+            opacity: 0;
+            margin-top: 0;
+        }
+
+        .services-container.active {
+            max-height: 2000px;
+            opacity: 1;
+            margin-top: 15px;
+        }
+
+        .service-category {
+            margin-bottom: 15px;
+        }
+
+        .service-category-title {
+            color: #FF9F40;
+            font-weight: 600;
+            font-size: 0.95em;
+            margin-bottom: 8px;
+            padding-left: 10px;
+            border-left: 3px solid #FF9F40;
+        }
+
+        .service-item {
+            background: rgba(255, 159, 64, 0.1);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid #FF9F40;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .service-item:hover {
+            background: rgba(255, 159, 64, 0.2);
+            transform: translateX(5px);
+            padding-left: 20px;
+        }
+
+        .service-name {
+            color: #e2e8f0;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .service-code {
+            color: #FF9F40;
+            font-size: 0.85em;
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .control-btn {
+            background: rgba(255, 159, 64, 0.9);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 107, 53, 0.9);
+            transform: translateX(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        }
+
+        /* Domain-specific colors */
+        .domain-1 { border-color: #FF6B6B; }
+        .domain-1 .domain-icon { color: #FF6B6B; }
+
+        .domain-2 { border-color: #4ECDC4; }
+        .domain-2 .domain-icon { color: #4ECDC4; }
+
+        .domain-3 { border-color: #45B7D1; }
+        .domain-3 .domain-icon { color: #45B7D1; }
+
+        .domain-4 { border-color: #FFA07A; }
+        .domain-4 .domain-icon { color: #FFA07A; }
+
+        .domain-5 { border-color: #98D8C8; }
+        .domain-5 .domain-icon { color: #98D8C8; }
+
+        .domain-6 { border-color: #F7DC6F; }
+        .domain-6 .domain-icon { color: #F7DC6F; }
+
+        .domain-7 { border-color: #BB8FCE; }
+        .domain-7 .domain-icon { color: #BB8FCE; }
+
+        .domain-8 { border-color: #82E0AA; }
+        .domain-8 .domain-icon { color: #82E0AA; }
+
+        @media (max-width: 768px) {
+            .domains-grid {
+                grid-template-columns: 1fr;
+            }
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>☁️ AWS Cloud Landing Zone Service Mapper</h1>
+            <p>Enterprise AWS Service Mapping for Cloud Landing Zone Architecture</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">Domain → Component → AWS Services</p>
+            <div class="export-controls">
+                <button class="export-btn" onclick="exportToCSV()">📥 Export to CSV</button>
+                <button class="export-btn" onclick="exportToJSON()">📄 Export to JSON</button>
+            </div>
+        </div>
+
+        <div class="domains-grid" id="domainsGrid"><div class="domain-card domain-1">
+                    <div class="domain-header" onclick="toggleDomain(1)">
+                        <div class="domain-icon">📦</div>
+                        <div class="domain-title">Resource Organization</div>
+                    </div>
+                    <div class="toggle-btn" onclick="toggleDomain(1)">
+                        <span id="toggle-text-1">Show Components</span>
+                        <span id="toggle-icon-1">▼</span>
+                    </div>
+                    <div class="components-container" id="domain-1">
+                        
+                        <div class="component-item" onclick="toggleComponent(event, '1-1')">
+                            <div class="component-header">
+                                <span>Management Groups</span>
+                                <span class="component-icon" id="icon-1-1">▼</span>
+                            </div>
+                            <div class="services-container" id="services-1-1">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Organizations</span>
+                                    <span class="service-code">organizations</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Control Tower</span>
+                                    <span class="service-code">control-tower</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Service Catalog</span>
+                                    <span class="service-code">service-catalog</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS CloudFormation StackSets</span>
+                                    <span class="service-code">cloudformation</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '1-2')">
+                            <div class="component-header">
+                                <span>Subscription Architecture</span>
+                                <span class="component-icon" id="icon-1-2">▼</span>
+                            </div>
+                            <div class="services-container" id="services-1-2">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Organizations - OUs</span>
+                                    <span class="service-code">organizations</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Control Tower - Account Factory</span>
+                                    <span class="service-code">control-tower</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Service Control Policies (SCPs)</span>
+                                    <span class="service-code">organizations</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS SSO (IAM Identity Center)</span>
+                                    <span class="service-code">sso</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '1-3')">
+                            <div class="component-header">
+                                <span>Resource Groups</span>
+                                <span class="component-icon" id="icon-1-3">▼</span>
+                            </div>
+                            <div class="services-container" id="services-1-3">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Resource Groups</span>
+                                    <span class="service-code">resource-groups</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Resource Access Manager</span>
+                                    <span class="service-code">ram</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Tag Editor</span>
+                                    <span class="service-code">resource-groups</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '1-4')">
+                            <div class="component-header">
+                                <span>Naming Standards</span>
+                                <span class="component-icon" id="icon-1-4">▼</span>
+                            </div>
+                            <div class="services-container" id="services-1-4">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Config Rules</span>
+                                    <span class="service-code">config</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Service Catalog</span>
+                                    <span class="service-code">service-catalog</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Lambda (Custom validation)</span>
+                                    <span class="service-code">lambda</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '1-5')">
+                            <div class="component-header">
+                                <span>Tagging Strategy</span>
+                                <span class="component-icon" id="icon-1-5">▼</span>
+                            </div>
+                            <div class="services-container" id="services-1-5">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Resource Groups &amp; Tag Editor</span>
+                                    <span class="service-code">resource-groups</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Config - Tag Compliance</span>
+                                    <span class="service-code">config</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Cost Allocation Tags</span>
+                                    <span class="service-code">billing</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Organizations Tag Policies</span>
+                                    <span class="service-code">organizations</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '1-6')">
+                            <div class="component-header">
+                                <span>Regional Deployment</span>
+                                <span class="component-icon" id="icon-1-6">▼</span>
+                            </div>
+                            <div class="services-container" id="services-1-6">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Regions</span>
+                                    <span class="service-code">global-infrastructure</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS CloudFormation StackSets</span>
+                                    <span class="service-code">cloudformation</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Global Accelerator</span>
+                                    <span class="service-code">global-accelerator</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon Route 53</span>
+                                    <span class="service-code">route53</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                    </div>
+                </div><div class="domain-card domain-8">
+                    <div class="domain-header" onclick="toggleDomain(2)">
+                        <div class="domain-icon">🌐</div>
+                        <div class="domain-title">Network Architecture</div>
+                    </div>
+                    <div class="toggle-btn" onclick="toggleDomain(2)">
+                        <span id="toggle-text-2">Show Components</span>
+                        <span id="toggle-icon-2">▼</span>
+                    </div>
+                    <div class="components-container" id="domain-2">
+                        
+                        <div class="component-item" onclick="toggleComponent(event, '2-1')">
+                            <div class="component-header">
+                                <span>Hub &amp; Spoke Architecture</span>
+                                <span class="component-icon" id="icon-2-1">▼</span>
+                            </div>
+                            <div class="services-container" id="services-2-1">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Transit Gateway</span>
+                                    <span class="service-code">transit-gateway</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon VPC</span>
+                                    <span class="service-code">vpc</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">VPC Peering</span>
+                                    <span class="service-code">vpc</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Resource Access Manager</span>
+                                    <span class="service-code">ram</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Network Manager</span>
+                                    <span class="service-code">network-manager</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '2-2')">
+                            <div class="component-header">
+                                <span>Hybrid Connectivity</span>
+                                <span class="component-icon" id="icon-2-2">▼</span>
+                            </div>
+                            <div class="services-container" id="services-2-2">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Direct Connect</span>
+                                    <span class="service-code">direct-connect</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Site-to-Site VPN</span>
+                                    <span class="service-code">vpn</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Client VPN</span>
+                                    <span class="service-code">vpn</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS PrivateLink</span>
+                                    <span class="service-code">privatelink</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Transit Gateway</span>
+                                    <span class="service-code">transit-gateway</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Virtual Private Gateway</span>
+                                    <span class="service-code">vpn</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '2-3')">
+                            <div class="component-header">
+                                <span>Internet Ingress/Egress</span>
+                                <span class="component-icon" id="icon-2-3">▼</span>
+                            </div>
+                            <div class="services-container" id="services-2-3">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Application Load Balancer</span>
+                                    <span class="service-code">elb</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Network Load Balancer</span>
+                                    <span class="service-code">elb</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon CloudFront</span>
+                                    <span class="service-code">cloudfront</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Network Firewall</span>
+                                    <span class="service-code">network-firewall</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">NAT Gateway</span>
+                                    <span class="service-code">vpc</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Global Accelerator</span>
+                                    <span class="service-code">global-accelerator</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon API Gateway</span>
+                                    <span class="service-code">api-gateway</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Elastic IP Addresses</span>
+                                    <span class="service-code">ec2</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '2-4')">
+                            <div class="component-header">
+                                <span>Edge Computing</span>
+                                <span class="component-icon" id="icon-2-4">▼</span>
+                            </div>
+                            <div class="services-container" id="services-2-4">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Outposts</span>
+                                    <span class="service-code">outposts</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Wavelength</span>
+                                    <span class="service-code">wavelength</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Local Zones</span>
+                                    <span class="service-code">local-zones</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS IoT Greengrass</span>
+                                    <span class="service-code">iot-greengrass</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Snow Family</span>
+                                    <span class="service-code">snow</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon CloudFront Edge Locations</span>
+                                    <span class="service-code">cloudfront</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '2-5')">
+                            <div class="component-header">
+                                <span>Network Security</span>
+                                <span class="component-icon" id="icon-2-5">▼</span>
+                            </div>
+                            <div class="services-container" id="services-2-5">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Security Groups</span>
+                                    <span class="service-code">vpc</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Network ACLs</span>
+                                    <span class="service-code">vpc</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Network Firewall</span>
+                                    <span class="service-code">network-firewall</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Shield Standard/Advanced</span>
+                                    <span class="service-code">shield</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS WAF</span>
+                                    <span class="service-code">waf</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Firewall Manager</span>
+                                    <span class="service-code">fms</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">VPC Flow Logs</span>
+                                    <span class="service-code">vpc</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '2-6')">
+                            <div class="component-header">
+                                <span>DNS &amp; Domain Services</span>
+                                <span class="component-icon" id="icon-2-6">▼</span>
+                            </div>
+                            <div class="services-container" id="services-2-6">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon Route 53</span>
+                                    <span class="service-code">route53</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Route 53 Resolver</span>
+                                    <span class="service-code">route53</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon Route 53 Private Hosted Zones</span>
+                                    <span class="service-code">route53</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Cloud Map</span>
+                                    <span class="service-code">cloud-map</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Route 53 DNSSEC</span>
+                                    <span class="service-code">route53</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                    </div>
+                </div><div class="domain-card domain-2">
+                    <div class="domain-header" onclick="toggleDomain(3)">
+                        <div class="domain-icon">🔐</div>
+                        <div class="domain-title">Identity &amp; Access Management</div>
+                    </div>
+                    <div class="toggle-btn" onclick="toggleDomain(3)">
+                        <span id="toggle-text-3">Show Components</span>
+                        <span id="toggle-icon-3">▼</span>
+                    </div>
+                    <div class="components-container" id="domain-3">
+                        
+                        <div class="component-item" onclick="toggleComponent(event, '3-1')">
+                            <div class="component-header">
+                                <span>Azure AD/Entra ID</span>
+                                <span class="component-icon" id="icon-3-1">▼</span>
+                            </div>
+                            <div class="services-container" id="services-3-1">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS IAM Identity Center (SSO)</span>
+                                    <span class="service-code">sso</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Directory Service</span>
+                                    <span class="service-code">directory-service</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon Cognito</span>
+                                    <span class="service-code">cognito</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS IAM</span>
+                                    <span class="service-code">iam</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '3-2')">
+                            <div class="component-header">
+                                <span>RBAC Policies</span>
+                                <span class="component-icon" id="icon-3-2">▼</span>
+                            </div>
+                            <div class="services-container" id="services-3-2">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS IAM Policies</span>
+                                    <span class="service-code">iam</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS IAM Roles</span>
+                                    <span class="service-code">iam</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Organizations SCPs</span>
+                                    <span class="service-code">organizations</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS IAM Policy Simulator</span>
+                                    <span class="service-code">iam</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS IAM Access Analyzer</span>
+                                    <span class="service-code">iam</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '3-3')">
+                            <div class="component-header">
+                                <span>Privileged Identity Management</span>
+                                <span class="component-icon" id="icon-3-3">▼</span>
+                            </div>
+                            <div class="services-container" id="services-3-3">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS IAM Identity Center Permission Sets</span>
+                                    <span class="service-code">sso</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Systems Manager Session Manager</span>
+                                    <span class="service-code">systems-manager</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS CloudTrail</span>
+                                    <span class="service-code">cloudtrail</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS IAM Access Analyzer</span>
+                                    <span class="service-code">iam</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '3-4')">
+                            <div class="component-header">
+                                <span>Service Principals</span>
+                                <span class="component-icon" id="icon-3-4">▼</span>
+                            </div>
+                            <div class="services-container" id="services-3-4">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS IAM Roles</span>
+                                    <span class="service-code">iam</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS IAM Service Roles</span>
+                                    <span class="service-code">iam</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS STS (Security Token Service)</span>
+                                    <span class="service-code">sts</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Secrets Manager</span>
+                                    <span class="service-code">secrets-manager</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '3-5')">
+                            <div class="component-header">
+                                <span>Conditional Access</span>
+                                <span class="component-icon" id="icon-3-5">▼</span>
+                            </div>
+                            <div class="services-container" id="services-3-5">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS IAM Policy Conditions</span>
+                                    <span class="service-code">iam</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Organizations SCPs</span>
+                                    <span class="service-code">organizations</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">VPC Endpoints Policies</span>
+                                    <span class="service-code">vpc</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Config Rules</span>
+                                    <span class="service-code">config</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '3-6')">
+                            <div class="component-header">
+                                <span>MFA Configuration</span>
+                                <span class="component-icon" id="icon-3-6">▼</span>
+                            </div>
+                            <div class="services-container" id="services-3-6">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS IAM MFA</span>
+                                    <span class="service-code">iam</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS IAM Identity Center MFA</span>
+                                    <span class="service-code">sso</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon Cognito MFA</span>
+                                    <span class="service-code">cognito</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                    </div>
+                </div><div class="domain-card domain-3">
+                    <div class="domain-header" onclick="toggleDomain(4)">
+                        <div class="domain-icon">⚙️</div>
+                        <div class="domain-title">Automation &amp; DevSecOps</div>
+                    </div>
+                    <div class="toggle-btn" onclick="toggleDomain(4)">
+                        <span id="toggle-text-4">Show Components</span>
+                        <span id="toggle-icon-4">▼</span>
+                    </div>
+                    <div class="components-container" id="domain-4">
+                        
+                        <div class="component-item" onclick="toggleComponent(event, '4-1')">
+                            <div class="component-header">
+                                <span>IaC Templates</span>
+                                <span class="component-icon" id="icon-4-1">▼</span>
+                            </div>
+                            <div class="services-container" id="services-4-1">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS CloudFormation</span>
+                                    <span class="service-code">cloudformation</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS CDK (Cloud Development Kit)</span>
+                                    <span class="service-code">cdk</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS SAM (Serverless Application Model)</span>
+                                    <span class="service-code">sam</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Terraform on AWS</span>
+                                    <span class="service-code">terraform</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS CloudFormation StackSets</span>
+                                    <span class="service-code">cloudformation</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '4-2')">
+                            <div class="component-header">
+                                <span>CI/CD Pipelines</span>
+                                <span class="component-icon" id="icon-4-2">▼</span>
+                            </div>
+                            <div class="services-container" id="services-4-2">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS CodePipeline</span>
+                                    <span class="service-code">codepipeline</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS CodeBuild</span>
+                                    <span class="service-code">codebuild</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS CodeDeploy</span>
+                                    <span class="service-code">codedeploy</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS CodeCommit</span>
+                                    <span class="service-code">codecommit</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon ECR</span>
+                                    <span class="service-code">ecr</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS CodeArtifact</span>
+                                    <span class="service-code">codeartifact</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '4-3')">
+                            <div class="component-header">
+                                <span>GitOps Workflows</span>
+                                <span class="component-icon" id="icon-4-3">▼</span>
+                            </div>
+                            <div class="services-container" id="services-4-3">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS CodeCommit</span>
+                                    <span class="service-code">codecommit</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS CodePipeline</span>
+                                    <span class="service-code">codepipeline</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon EKS with Flux/ArgoCD</span>
+                                    <span class="service-code">eks</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Lambda</span>
+                                    <span class="service-code">lambda</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '4-4')">
+                            <div class="component-header">
+                                <span>Security Scanning</span>
+                                <span class="component-icon" id="icon-4-4">▼</span>
+                            </div>
+                            <div class="services-container" id="services-4-4">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon Inspector</span>
+                                    <span class="service-code">inspector</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon ECR Image Scanning</span>
+                                    <span class="service-code">ecr</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Security Hub</span>
+                                    <span class="service-code">security-hub</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon GuardDuty</span>
+                                    <span class="service-code">guardduty</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS CodeGuru</span>
+                                    <span class="service-code">codeguru</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '4-5')">
+                            <div class="component-header">
+                                <span>Deployment Gates</span>
+                                <span class="component-icon" id="icon-4-5">▼</span>
+                            </div>
+                            <div class="services-container" id="services-4-5">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS CodePipeline Manual Approvals</span>
+                                    <span class="service-code">codepipeline</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Lambda (Custom gates)</span>
+                                    <span class="service-code">lambda</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Step Functions</span>
+                                    <span class="service-code">step-functions</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon SNS</span>
+                                    <span class="service-code">sns</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS CloudWatch Alarms</span>
+                                    <span class="service-code">cloudwatch</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '4-6')">
+                            <div class="component-header">
+                                <span>Configuration Management</span>
+                                <span class="component-icon" id="icon-4-6">▼</span>
+                            </div>
+                            <div class="services-container" id="services-4-6">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Systems Manager Parameter Store</span>
+                                    <span class="service-code">systems-manager</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Secrets Manager</span>
+                                    <span class="service-code">secrets-manager</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS AppConfig</span>
+                                    <span class="service-code">appconfig</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Systems Manager State Manager</span>
+                                    <span class="service-code">systems-manager</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS OpsWorks</span>
+                                    <span class="service-code">opsworks</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                    </div>
+                </div><div class="domain-card domain-4">
+                    <div class="domain-header" onclick="toggleDomain(5)">
+                        <div class="domain-icon">🔧</div>
+                        <div class="domain-title">Management &amp; Operations</div>
+                    </div>
+                    <div class="toggle-btn" onclick="toggleDomain(5)">
+                        <span id="toggle-text-5">Show Components</span>
+                        <span id="toggle-icon-5">▼</span>
+                    </div>
+                    <div class="components-container" id="domain-5">
+                        
+                        <div class="component-item" onclick="toggleComponent(event, '5-1')">
+                            <div class="component-header">
+                                <span>Monitoring &amp; Logging</span>
+                                <span class="component-icon" id="icon-5-1">▼</span>
+                            </div>
+                            <div class="services-container" id="services-5-1">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon CloudWatch</span>
+                                    <span class="service-code">cloudwatch</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS CloudTrail</span>
+                                    <span class="service-code">cloudtrail</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon CloudWatch Logs</span>
+                                    <span class="service-code">cloudwatch</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS X-Ray</span>
+                                    <span class="service-code">xray</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon OpenSearch Service</span>
+                                    <span class="service-code">opensearch</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon Managed Grafana</span>
+                                    <span class="service-code">grafana</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '5-2')">
+                            <div class="component-header">
+                                <span>Alerting System</span>
+                                <span class="component-icon" id="icon-5-2">▼</span>
+                            </div>
+                            <div class="services-container" id="services-5-2">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon CloudWatch Alarms</span>
+                                    <span class="service-code">cloudwatch</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon SNS</span>
+                                    <span class="service-code">sns</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon EventBridge</span>
+                                    <span class="service-code">eventbridge</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Chatbot</span>
+                                    <span class="service-code">chatbot</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Lambda</span>
+                                    <span class="service-code">lambda</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '5-3')">
+                            <div class="component-header">
+                                <span>Backup &amp; DR</span>
+                                <span class="component-icon" id="icon-5-3">▼</span>
+                            </div>
+                            <div class="services-container" id="services-5-3">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Backup</span>
+                                    <span class="service-code">backup</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Elastic Disaster Recovery</span>
+                                    <span class="service-code">drs</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon S3 Cross-Region Replication</span>
+                                    <span class="service-code">s3</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Storage Gateway</span>
+                                    <span class="service-code">storage-gateway</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon EBS Snapshots</span>
+                                    <span class="service-code">ebs</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS DataSync</span>
+                                    <span class="service-code">datasync</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '5-4')">
+                            <div class="component-header">
+                                <span>Update Management</span>
+                                <span class="component-icon" id="icon-5-4">▼</span>
+                            </div>
+                            <div class="services-container" id="services-5-4">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Systems Manager Patch Manager</span>
+                                    <span class="service-code">systems-manager</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Systems Manager Maintenance Windows</span>
+                                    <span class="service-code">systems-manager</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Config</span>
+                                    <span class="service-code">config</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon Inspector</span>
+                                    <span class="service-code">inspector</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '5-5')">
+                            <div class="component-header">
+                                <span>Service Health</span>
+                                <span class="component-icon" id="icon-5-5">▼</span>
+                            </div>
+                            <div class="services-container" id="services-5-5">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Health Dashboard</span>
+                                    <span class="service-code">health</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Personal Health Dashboard</span>
+                                    <span class="service-code">health</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Service Health API</span>
+                                    <span class="service-code">health</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon EventBridge</span>
+                                    <span class="service-code">eventbridge</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Trusted Advisor</span>
+                                    <span class="service-code">trustedadvisor</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '5-6')">
+                            <div class="component-header">
+                                <span>ITSM Integration</span>
+                                <span class="component-icon" id="icon-5-6">▼</span>
+                            </div>
+                            <div class="services-container" id="services-5-6">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Service Management Connector</span>
+                                    <span class="service-code">service-management</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon EventBridge</span>
+                                    <span class="service-code">eventbridge</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Lambda</span>
+                                    <span class="service-code">lambda</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon SNS</span>
+                                    <span class="service-code">sns</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Step Functions</span>
+                                    <span class="service-code">step-functions</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                    </div>
+                </div><div class="domain-card domain-5">
+                    <div class="domain-header" onclick="toggleDomain(6)">
+                        <div class="domain-icon">🛡️</div>
+                        <div class="domain-title">Security</div>
+                    </div>
+                    <div class="toggle-btn" onclick="toggleDomain(6)">
+                        <span id="toggle-text-6">Show Components</span>
+                        <span id="toggle-icon-6">▼</span>
+                    </div>
+                    <div class="components-container" id="domain-6">
+                        
+                        <div class="component-item" onclick="toggleComponent(event, '6-1')">
+                            <div class="component-header">
+                                <span>Data Encryption</span>
+                                <span class="component-icon" id="icon-6-1">▼</span>
+                            </div>
+                            <div class="services-container" id="services-6-1">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS KMS (Key Management Service)</span>
+                                    <span class="service-code">kms</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS CloudHSM</span>
+                                    <span class="service-code">cloudhsm</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Certificate Manager</span>
+                                    <span class="service-code">acm</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon S3 Encryption</span>
+                                    <span class="service-code">s3</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon EBS Encryption</span>
+                                    <span class="service-code">ebs</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Secrets Manager</span>
+                                    <span class="service-code">secrets-manager</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '6-2')">
+                            <div class="component-header">
+                                <span>Threat Protection</span>
+                                <span class="component-icon" id="icon-6-2">▼</span>
+                            </div>
+                            <div class="services-container" id="services-6-2">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon GuardDuty</span>
+                                    <span class="service-code">guardduty</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Security Hub</span>
+                                    <span class="service-code">security-hub</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon Macie</span>
+                                    <span class="service-code">macie</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon Detective</span>
+                                    <span class="service-code">detective</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Shield</span>
+                                    <span class="service-code">shield</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '6-3')">
+                            <div class="component-header">
+                                <span>Security Baselines</span>
+                                <span class="component-icon" id="icon-6-3">▼</span>
+                            </div>
+                            <div class="services-container" id="services-6-3">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Security Hub - Security Standards</span>
+                                    <span class="service-code">security-hub</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Config Conformance Packs</span>
+                                    <span class="service-code">config</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Systems Manager Quick Setup</span>
+                                    <span class="service-code">systems-manager</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Control Tower</span>
+                                    <span class="service-code">control-tower</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Audit Manager</span>
+                                    <span class="service-code">audit-manager</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '6-4')">
+                            <div class="component-header">
+                                <span>Vulnerability Management</span>
+                                <span class="component-icon" id="icon-6-4">▼</span>
+                            </div>
+                            <div class="services-container" id="services-6-4">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon Inspector</span>
+                                    <span class="service-code">inspector</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Security Hub</span>
+                                    <span class="service-code">security-hub</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon ECR Image Scanning</span>
+                                    <span class="service-code">ecr</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Systems Manager Patch Manager</span>
+                                    <span class="service-code">systems-manager</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '6-5')">
+                            <div class="component-header">
+                                <span>Key Management</span>
+                                <span class="component-icon" id="icon-6-5">▼</span>
+                            </div>
+                            <div class="services-container" id="services-6-5">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS KMS</span>
+                                    <span class="service-code">kms</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS CloudHSM</span>
+                                    <span class="service-code">cloudhsm</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Secrets Manager</span>
+                                    <span class="service-code">secrets-manager</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Certificate Manager</span>
+                                    <span class="service-code">acm</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Systems Manager Parameter Store</span>
+                                    <span class="service-code">systems-manager</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '6-6')">
+                            <div class="component-header">
+                                <span>Zero Trust Architecture</span>
+                                <span class="component-icon" id="icon-6-6">▼</span>
+                            </div>
+                            <div class="services-container" id="services-6-6">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS IAM Identity Center</span>
+                                    <span class="service-code">sso</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Verified Access</span>
+                                    <span class="service-code">verified-access</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS PrivateLink</span>
+                                    <span class="service-code">privatelink</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon VPC</span>
+                                    <span class="service-code">vpc</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Network Firewall</span>
+                                    <span class="service-code">network-firewall</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS IAM</span>
+                                    <span class="service-code">iam</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                    </div>
+                </div><div class="domain-card domain-6">
+                    <div class="domain-header" onclick="toggleDomain(7)">
+                        <div class="domain-icon">📋</div>
+                        <div class="domain-title">Governance &amp; Compliance</div>
+                    </div>
+                    <div class="toggle-btn" onclick="toggleDomain(7)">
+                        <span id="toggle-text-7">Show Components</span>
+                        <span id="toggle-icon-7">▼</span>
+                    </div>
+                    <div class="components-container" id="domain-7">
+                        
+                        <div class="component-item" onclick="toggleComponent(event, '7-1')">
+                            <div class="component-header">
+                                <span>Policy Management</span>
+                                <span class="component-icon" id="icon-7-1">▼</span>
+                            </div>
+                            <div class="services-container" id="services-7-1">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Organizations - Service Control Policies</span>
+                                    <span class="service-code">organizations</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Config Rules</span>
+                                    <span class="service-code">config</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Control Tower Guardrails</span>
+                                    <span class="service-code">control-tower</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS IAM Policies</span>
+                                    <span class="service-code">iam</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Resource Access Manager</span>
+                                    <span class="service-code">ram</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '7-2')">
+                            <div class="component-header">
+                                <span>Blueprints</span>
+                                <span class="component-icon" id="icon-7-2">▼</span>
+                            </div>
+                            <div class="services-container" id="services-7-2">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Service Catalog</span>
+                                    <span class="service-code">service-catalog</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Control Tower Account Factory</span>
+                                    <span class="service-code">control-tower</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS CloudFormation StackSets</span>
+                                    <span class="service-code">cloudformation</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS CDK</span>
+                                    <span class="service-code">cdk</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Proton</span>
+                                    <span class="service-code">proton</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '7-3')">
+                            <div class="component-header">
+                                <span>Compliance Reports</span>
+                                <span class="component-icon" id="icon-7-3">▼</span>
+                            </div>
+                            <div class="services-container" id="services-7-3">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Audit Manager</span>
+                                    <span class="service-code">audit-manager</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Security Hub</span>
+                                    <span class="service-code">security-hub</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Config Compliance Dashboard</span>
+                                    <span class="service-code">config</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Artifact</span>
+                                    <span class="service-code">artifact</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon QuickSight</span>
+                                    <span class="service-code">quicksight</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '7-4')">
+                            <div class="component-header">
+                                <span>Audit Trails</span>
+                                <span class="component-icon" id="icon-7-4">▼</span>
+                            </div>
+                            <div class="services-container" id="services-7-4">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS CloudTrail</span>
+                                    <span class="service-code">cloudtrail</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Config</span>
+                                    <span class="service-code">config</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon S3 Object Lock</span>
+                                    <span class="service-code">s3</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon CloudWatch Logs</span>
+                                    <span class="service-code">cloudwatch</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS CloudTrail Lake</span>
+                                    <span class="service-code">cloudtrail</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '7-5')">
+                            <div class="component-header">
+                                <span>Regulatory Standards</span>
+                                <span class="component-icon" id="icon-7-5">▼</span>
+                            </div>
+                            <div class="services-container" id="services-7-5">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Artifact</span>
+                                    <span class="service-code">artifact</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Audit Manager</span>
+                                    <span class="service-code">audit-manager</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Security Hub Compliance Standards</span>
+                                    <span class="service-code">security-hub</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Config Conformance Packs</span>
+                                    <span class="service-code">config</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Compliance Center</span>
+                                    <span class="service-code">compliance</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '7-6')">
+                            <div class="component-header">
+                                <span>Data Residency</span>
+                                <span class="component-icon" id="icon-7-6">▼</span>
+                            </div>
+                            <div class="services-container" id="services-7-6">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Regions</span>
+                                    <span class="service-code">global-infrastructure</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Organizations SCPs</span>
+                                    <span class="service-code">organizations</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Config Rules (Region restrictions)</span>
+                                    <span class="service-code">config</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon S3 Bucket Policies</span>
+                                    <span class="service-code">s3</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS PrivateLink</span>
+                                    <span class="service-code">privatelink</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                    </div>
+                </div><div class="domain-card domain-7">
+                    <div class="domain-header" onclick="toggleDomain(8)">
+                        <div class="domain-icon">💰</div>
+                        <div class="domain-title">Finance Management</div>
+                    </div>
+                    <div class="toggle-btn" onclick="toggleDomain(8)">
+                        <span id="toggle-text-8">Show Components</span>
+                        <span id="toggle-icon-8">▼</span>
+                    </div>
+                    <div class="components-container" id="domain-8">
+                        
+                        <div class="component-item" onclick="toggleComponent(event, '8-1')">
+                            <div class="component-header">
+                                <span>Cost Optimization</span>
+                                <span class="component-icon" id="icon-8-1">▼</span>
+                            </div>
+                            <div class="services-container" id="services-8-1">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Compute Optimizer</span>
+                                    <span class="service-code">compute-optimizer</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Cost Explorer</span>
+                                    <span class="service-code">cost-explorer</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Trusted Advisor</span>
+                                    <span class="service-code">trustedadvisor</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Cost Anomaly Detection</span>
+                                    <span class="service-code">cost-explorer</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon CloudWatch</span>
+                                    <span class="service-code">cloudwatch</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '8-2')">
+                            <div class="component-header">
+                                <span>Budget Controls</span>
+                                <span class="component-icon" id="icon-8-2">▼</span>
+                            </div>
+                            <div class="services-container" id="services-8-2">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Budgets</span>
+                                    <span class="service-code">budgets</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Cost Anomaly Detection</span>
+                                    <span class="service-code">cost-explorer</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon SNS</span>
+                                    <span class="service-code">sns</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Lambda</span>
+                                    <span class="service-code">lambda</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Chatbot</span>
+                                    <span class="service-code">chatbot</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '8-3')">
+                            <div class="component-header">
+                                <span>Chargeback Models</span>
+                                <span class="component-icon" id="icon-8-3">▼</span>
+                            </div>
+                            <div class="services-container" id="services-8-3">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Cost Allocation Tags</span>
+                                    <span class="service-code">billing</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Cost Categories</span>
+                                    <span class="service-code">billing</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Cost Explorer</span>
+                                    <span class="service-code">cost-explorer</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">Amazon QuickSight</span>
+                                    <span class="service-code">quicksight</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Cost and Usage Report</span>
+                                    <span class="service-code">billing</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '8-4')">
+                            <div class="component-header">
+                                <span>Cost Allocation</span>
+                                <span class="component-icon" id="icon-8-4">▼</span>
+                            </div>
+                            <div class="services-container" id="services-8-4">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Cost Allocation Tags</span>
+                                    <span class="service-code">billing</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Cost Categories</span>
+                                    <span class="service-code">billing</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Organizations Consolidated Billing</span>
+                                    <span class="service-code">organizations</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Cost Explorer</span>
+                                    <span class="service-code">cost-explorer</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Cost and Usage Report</span>
+                                    <span class="service-code">billing</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '8-5')">
+                            <div class="component-header">
+                                <span>Reserved Instances</span>
+                                <span class="component-icon" id="icon-8-5">▼</span>
+                            </div>
+                            <div class="services-container" id="services-8-5">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Reserved Instances</span>
+                                    <span class="service-code">ec2</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Savings Plans</span>
+                                    <span class="service-code">savings-plans</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon EC2 Reserved Instance Marketplace</span>
+                                    <span class="service-code">ec2</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Cost Explorer RI/SP Recommendations</span>
+                                    <span class="service-code">cost-explorer</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Compute Optimizer</span>
+                                    <span class="service-code">compute-optimizer</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                        <div class="component-item" onclick="toggleComponent(event, '8-6')">
+                            <div class="component-header">
+                                <span>Usage Analytics</span>
+                                <span class="component-icon" id="icon-8-6">▼</span>
+                            </div>
+                            <div class="services-container" id="services-8-6">
+                                <div class="service-category"><div class="service-category-title">Primary Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Cost and Usage Report</span>
+                                    <span class="service-code">billing</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Cost Explorer</span>
+                                    <span class="service-code">cost-explorer</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon QuickSight</span>
+                                    <span class="service-code">quicksight</span>
+                                </div>
+                            </div><div class="service-category"><div class="service-category-title">Supporting Services</div>
+                                <div class="service-item">
+                                    <span class="service-name">AWS Data Exchange</span>
+                                    <span class="service-code">data-exchange</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">Amazon Athena</span>
+                                    <span class="service-code">athena</span>
+                                </div>
+                            
+                                <div class="service-item">
+                                    <span class="service-name">AWS Glue</span>
+                                    <span class="service-code">glue</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+                    </div>
+                </div></div>
+
+        <div class="controls">
+            <button class="control-btn" onclick="expandAll()">📂 Expand All</button>
+            <button class="control-btn" onclick="collapseAll()">📁 Collapse All</button>
+            <button class="control-btn" onclick="scrollToTop()">⬆️ Back to Top</button>
+        </div>
+    </div>
+
+    <script>
+        const awsServicesData = {
+            "Resource Organization": {
+                icon: "📦",
+                class: "domain-1",
+                components: {
+                    "Management Groups": {
+                        primary: [
+                            { name: "AWS Organizations", code: "organizations" },
+                            { name: "AWS Control Tower", code: "control-tower" },
+                            { name: "AWS Service Catalog", code: "service-catalog" }
+                        ],
+                        supporting: [
+                            { name: "AWS CloudFormation StackSets", code: "cloudformation" }
+                        ]
+                    },
+                    "Subscription Architecture": {
+                        primary: [
+                            { name: "AWS Organizations - OUs", code: "organizations" },
+                            { name: "AWS Control Tower - Account Factory", code: "control-tower" },
+                            { name: "AWS Service Control Policies (SCPs)", code: "organizations" }
+                        ],
+                        supporting: [
+                            { name: "AWS SSO (IAM Identity Center)", code: "sso" }
+                        ]
+                    },
+                    "Resource Groups": {
+                        primary: [
+                            { name: "AWS Resource Groups", code: "resource-groups" },
+                            { name: "AWS Resource Access Manager", code: "ram" },
+                            { name: "AWS Tag Editor", code: "resource-groups" }
+                        ]
+                    },
+                    "Naming Standards": {
+                        primary: [
+                            { name: "AWS Config Rules", code: "config" },
+                            { name: "AWS Service Catalog", code: "service-catalog" }
+                        ],
+                        supporting: [
+                            { name: "AWS Lambda (Custom validation)", code: "lambda" }
+                        ]
+                    },
+                    "Tagging Strategy": {
+                        primary: [
+                            { name: "AWS Resource Groups & Tag Editor", code: "resource-groups" },
+                            { name: "AWS Config - Tag Compliance", code: "config" },
+                            { name: "AWS Cost Allocation Tags", code: "billing" }
+                        ],
+                        supporting: [
+                            { name: "AWS Organizations Tag Policies", code: "organizations" }
+                        ]
+                    },
+                    "Regional Deployment": {
+                        primary: [
+                            { name: "AWS Regions", code: "global-infrastructure" },
+                            { name: "AWS CloudFormation StackSets", code: "cloudformation" },
+                            { name: "AWS Global Accelerator", code: "global-accelerator" }
+                        ],
+                        supporting: [
+                            { name: "Amazon Route 53", code: "route53" }
+                        ]
+                    }
+                }
+            },
+            "Network Architecture": {
+                icon: "🌐",
+                class: "domain-8",
+                components: {
+                    "Hub & Spoke Architecture": {
+                        primary: [
+                            { name: "AWS Transit Gateway", code: "transit-gateway" },
+                            { name: "Amazon VPC", code: "vpc" },
+                            { name: "VPC Peering", code: "vpc" }
+                        ],
+                        supporting: [
+                            { name: "AWS Resource Access Manager", code: "ram" },
+                            { name: "AWS Network Manager", code: "network-manager" }
+                        ]
+                    },
+                    "Hybrid Connectivity": {
+                        primary: [
+                            { name: "AWS Direct Connect", code: "direct-connect" },
+                            { name: "AWS Site-to-Site VPN", code: "vpn" },
+                            { name: "AWS Client VPN", code: "vpn" },
+                            { name: "AWS PrivateLink", code: "privatelink" }
+                        ],
+                        supporting: [
+                            { name: "AWS Transit Gateway", code: "transit-gateway" },
+                            { name: "AWS Virtual Private Gateway", code: "vpn" }
+                        ]
+                    },
+                    "Internet Ingress/Egress": {
+                        primary: [
+                            { name: "AWS Application Load Balancer", code: "elb" },
+                            { name: "AWS Network Load Balancer", code: "elb" },
+                            { name: "Amazon CloudFront", code: "cloudfront" },
+                            { name: "AWS Network Firewall", code: "network-firewall" },
+                            { name: "NAT Gateway", code: "vpc" }
+                        ],
+                        supporting: [
+                            { name: "AWS Global Accelerator", code: "global-accelerator" },
+                            { name: "Amazon API Gateway", code: "api-gateway" },
+                            { name: "Elastic IP Addresses", code: "ec2" }
+                        ]
+                    },
+                    "Edge Computing": {
+                        primary: [
+                            { name: "AWS Outposts", code: "outposts" },
+                            { name: "AWS Wavelength", code: "wavelength" },
+                            { name: "AWS Local Zones", code: "local-zones" },
+                            { name: "AWS IoT Greengrass", code: "iot-greengrass" }
+                        ],
+                        supporting: [
+                            { name: "AWS Snow Family", code: "snow" },
+                            { name: "Amazon CloudFront Edge Locations", code: "cloudfront" }
+                        ]
+                    },
+                    "Network Security": {
+                        primary: [
+                            { name: "Security Groups", code: "vpc" },
+                            { name: "Network ACLs", code: "vpc" },
+                            { name: "AWS Network Firewall", code: "network-firewall" },
+                            { name: "AWS Shield Standard/Advanced", code: "shield" },
+                            { name: "AWS WAF", code: "waf" }
+                        ],
+                        supporting: [
+                            { name: "AWS Firewall Manager", code: "fms" },
+                            { name: "VPC Flow Logs", code: "vpc" }
+                        ]
+                    },
+                    "DNS & Domain Services": {
+                        primary: [
+                            { name: "Amazon Route 53", code: "route53" },
+                            { name: "Route 53 Resolver", code: "route53" },
+                            { name: "Amazon Route 53 Private Hosted Zones", code: "route53" }
+                        ],
+                        supporting: [
+                            { name: "AWS Cloud Map", code: "cloud-map" },
+                            { name: "Route 53 DNSSEC", code: "route53" }
+                        ]
+                    }
+                }
+            },
+            "Identity & Access Management": {
+                icon: "🔐",
+                class: "domain-2",
+                components: {
+                    "Azure AD/Entra ID": {
+                        primary: [
+                            { name: "AWS IAM Identity Center (SSO)", code: "sso" },
+                            { name: "AWS Directory Service", code: "directory-service" },
+                            { name: "Amazon Cognito", code: "cognito" }
+                        ],
+                        supporting: [
+                            { name: "AWS IAM", code: "iam" }
+                        ]
+                    },
+                    "RBAC Policies": {
+                        primary: [
+                            { name: "AWS IAM Policies", code: "iam" },
+                            { name: "AWS IAM Roles", code: "iam" },
+                            { name: "AWS Organizations SCPs", code: "organizations" }
+                        ],
+                        supporting: [
+                            { name: "AWS IAM Policy Simulator", code: "iam" },
+                            { name: "AWS IAM Access Analyzer", code: "iam" }
+                        ]
+                    },
+                    "Privileged Identity Management": {
+                        primary: [
+                            { name: "AWS IAM Identity Center Permission Sets", code: "sso" },
+                            { name: "AWS Systems Manager Session Manager", code: "systems-manager" }
+                        ],
+                        supporting: [
+                            { name: "AWS CloudTrail", code: "cloudtrail" },
+                            { name: "AWS IAM Access Analyzer", code: "iam" }
+                        ]
+                    },
+                    "Service Principals": {
+                        primary: [
+                            { name: "AWS IAM Roles", code: "iam" },
+                            { name: "AWS IAM Service Roles", code: "iam" },
+                            { name: "AWS STS (Security Token Service)", code: "sts" }
+                        ],
+                        supporting: [
+                            { name: "AWS Secrets Manager", code: "secrets-manager" }
+                        ]
+                    },
+                    "Conditional Access": {
+                        primary: [
+                            { name: "AWS IAM Policy Conditions", code: "iam" },
+                            { name: "AWS Organizations SCPs", code: "organizations" },
+                            { name: "VPC Endpoints Policies", code: "vpc" }
+                        ],
+                        supporting: [
+                            { name: "AWS Config Rules", code: "config" }
+                        ]
+                    },
+                    "MFA Configuration": {
+                        primary: [
+                            { name: "AWS IAM MFA", code: "iam" },
+                            { name: "AWS IAM Identity Center MFA", code: "sso" }
+                        ],
+                        supporting: [
+                            { name: "Amazon Cognito MFA", code: "cognito" }
+                        ]
+                    }
+                }
+            },
+            "Automation & DevSecOps": {
+                icon: "⚙️",
+                class: "domain-3",
+                components: {
+                    "IaC Templates": {
+                        primary: [
+                            { name: "AWS CloudFormation", code: "cloudformation" },
+                            { name: "AWS CDK (Cloud Development Kit)", code: "cdk" },
+                            { name: "AWS SAM (Serverless Application Model)", code: "sam" }
+                        ],
+                        supporting: [
+                            { name: "Terraform on AWS", code: "terraform" },
+                            { name: "AWS CloudFormation StackSets", code: "cloudformation" }
+                        ]
+                    },
+                    "CI/CD Pipelines": {
+                        primary: [
+                            { name: "AWS CodePipeline", code: "codepipeline" },
+                            { name: "AWS CodeBuild", code: "codebuild" },
+                            { name: "AWS CodeDeploy", code: "codedeploy" }
+                        ],
+                        supporting: [
+                            { name: "AWS CodeCommit", code: "codecommit" },
+                            { name: "Amazon ECR", code: "ecr" },
+                            { name: "AWS CodeArtifact", code: "codeartifact" }
+                        ]
+                    },
+                    "GitOps Workflows": {
+                        primary: [
+                            { name: "AWS CodeCommit", code: "codecommit" },
+                            { name: "AWS CodePipeline", code: "codepipeline" }
+                        ],
+                        supporting: [
+                            { name: "Amazon EKS with Flux/ArgoCD", code: "eks" },
+                            { name: "AWS Lambda", code: "lambda" }
+                        ]
+                    },
+                    "Security Scanning": {
+                        primary: [
+                            { name: "Amazon Inspector", code: "inspector" },
+                            { name: "Amazon ECR Image Scanning", code: "ecr" },
+                            { name: "AWS Security Hub", code: "security-hub" }
+                        ],
+                        supporting: [
+                            { name: "Amazon GuardDuty", code: "guardduty" },
+                            { name: "AWS CodeGuru", code: "codeguru" }
+                        ]
+                    },
+                    "Deployment Gates": {
+                        primary: [
+                            { name: "AWS CodePipeline Manual Approvals", code: "codepipeline" },
+                            { name: "AWS Lambda (Custom gates)", code: "lambda" },
+                            { name: "AWS Step Functions", code: "step-functions" }
+                        ],
+                        supporting: [
+                            { name: "Amazon SNS", code: "sns" },
+                            { name: "AWS CloudWatch Alarms", code: "cloudwatch" }
+                        ]
+                    },
+                    "Configuration Management": {
+                        primary: [
+                            { name: "AWS Systems Manager Parameter Store", code: "systems-manager" },
+                            { name: "AWS Secrets Manager", code: "secrets-manager" },
+                            { name: "AWS AppConfig", code: "appconfig" }
+                        ],
+                        supporting: [
+                            { name: "AWS Systems Manager State Manager", code: "systems-manager" },
+                            { name: "AWS OpsWorks", code: "opsworks" }
+                        ]
+                    }
+                }
+            },
+            "Management & Operations": {
+                icon: "🔧",
+                class: "domain-4",
+                components: {
+                    "Monitoring & Logging": {
+                        primary: [
+                            { name: "Amazon CloudWatch", code: "cloudwatch" },
+                            { name: "AWS CloudTrail", code: "cloudtrail" },
+                            { name: "Amazon CloudWatch Logs", code: "cloudwatch" },
+                            { name: "AWS X-Ray", code: "xray" }
+                        ],
+                        supporting: [
+                            { name: "Amazon OpenSearch Service", code: "opensearch" },
+                            { name: "Amazon Managed Grafana", code: "grafana" }
+                        ]
+                    },
+                    "Alerting System": {
+                        primary: [
+                            { name: "Amazon CloudWatch Alarms", code: "cloudwatch" },
+                            { name: "Amazon SNS", code: "sns" },
+                            { name: "Amazon EventBridge", code: "eventbridge" }
+                        ],
+                        supporting: [
+                            { name: "AWS Chatbot", code: "chatbot" },
+                            { name: "AWS Lambda", code: "lambda" }
+                        ]
+                    },
+                    "Backup & DR": {
+                        primary: [
+                            { name: "AWS Backup", code: "backup" },
+                            { name: "AWS Elastic Disaster Recovery", code: "drs" },
+                            { name: "Amazon S3 Cross-Region Replication", code: "s3" }
+                        ],
+                        supporting: [
+                            { name: "AWS Storage Gateway", code: "storage-gateway" },
+                            { name: "Amazon EBS Snapshots", code: "ebs" },
+                            { name: "AWS DataSync", code: "datasync" }
+                        ]
+                    },
+                    "Update Management": {
+                        primary: [
+                            { name: "AWS Systems Manager Patch Manager", code: "systems-manager" },
+                            { name: "AWS Systems Manager Maintenance Windows", code: "systems-manager" }
+                        ],
+                        supporting: [
+                            { name: "AWS Config", code: "config" },
+                            { name: "Amazon Inspector", code: "inspector" }
+                        ]
+                    },
+                    "Service Health": {
+                        primary: [
+                            { name: "AWS Health Dashboard", code: "health" },
+                            { name: "AWS Personal Health Dashboard", code: "health" },
+                            { name: "AWS Service Health API", code: "health" }
+                        ],
+                        supporting: [
+                            { name: "Amazon EventBridge", code: "eventbridge" },
+                            { name: "AWS Trusted Advisor", code: "trustedadvisor" }
+                        ]
+                    },
+                    "ITSM Integration": {
+                        primary: [
+                            { name: "AWS Service Management Connector", code: "service-management" },
+                            { name: "Amazon EventBridge", code: "eventbridge" }
+                        ],
+                        supporting: [
+                            { name: "AWS Lambda", code: "lambda" },
+                            { name: "Amazon SNS", code: "sns" },
+                            { name: "AWS Step Functions", code: "step-functions" }
+                        ]
+                    }
+                }
+            },
+            "Security": {
+                icon: "🛡️",
+                class: "domain-5",
+                components: {
+                    "Data Encryption": {
+                        primary: [
+                            { name: "AWS KMS (Key Management Service)", code: "kms" },
+                            { name: "AWS CloudHSM", code: "cloudhsm" },
+                            { name: "AWS Certificate Manager", code: "acm" }
+                        ],
+                        supporting: [
+                            { name: "Amazon S3 Encryption", code: "s3" },
+                            { name: "Amazon EBS Encryption", code: "ebs" },
+                            { name: "AWS Secrets Manager", code: "secrets-manager" }
+                        ]
+                    },
+                    "Threat Protection": {
+                        primary: [
+                            { name: "Amazon GuardDuty", code: "guardduty" },
+                            { name: "AWS Security Hub", code: "security-hub" },
+                            { name: "Amazon Macie", code: "macie" }
+                        ],
+                        supporting: [
+                            { name: "Amazon Detective", code: "detective" },
+                            { name: "AWS Shield", code: "shield" }
+                        ]
+                    },
+                    "Security Baselines": {
+                        primary: [
+                            { name: "AWS Security Hub - Security Standards", code: "security-hub" },
+                            { name: "AWS Config Conformance Packs", code: "config" },
+                            { name: "AWS Systems Manager Quick Setup", code: "systems-manager" }
+                        ],
+                        supporting: [
+                            { name: "AWS Control Tower", code: "control-tower" },
+                            { name: "AWS Audit Manager", code: "audit-manager" }
+                        ]
+                    },
+                    "Vulnerability Management": {
+                        primary: [
+                            { name: "Amazon Inspector", code: "inspector" },
+                            { name: "AWS Security Hub", code: "security-hub" }
+                        ],
+                        supporting: [
+                            { name: "Amazon ECR Image Scanning", code: "ecr" },
+                            { name: "AWS Systems Manager Patch Manager", code: "systems-manager" }
+                        ]
+                    },
+                    "Key Management": {
+                        primary: [
+                            { name: "AWS KMS", code: "kms" },
+                            { name: "AWS CloudHSM", code: "cloudhsm" },
+                            { name: "AWS Secrets Manager", code: "secrets-manager" }
+                        ],
+                        supporting: [
+                            { name: "AWS Certificate Manager", code: "acm" },
+                            { name: "AWS Systems Manager Parameter Store", code: "systems-manager" }
+                        ]
+                    },
+                    "Zero Trust Architecture": {
+                        primary: [
+                            { name: "AWS IAM Identity Center", code: "sso" },
+                            { name: "AWS Verified Access", code: "verified-access" },
+                            { name: "AWS PrivateLink", code: "privatelink" }
+                        ],
+                        supporting: [
+                            { name: "Amazon VPC", code: "vpc" },
+                            { name: "AWS Network Firewall", code: "network-firewall" },
+                            { name: "AWS IAM", code: "iam" }
+                        ]
+                    }
+                }
+            },
+            "Governance & Compliance": {
+                icon: "📋",
+                class: "domain-6",
+                components: {
+                    "Policy Management": {
+                        primary: [
+                            { name: "AWS Organizations - Service Control Policies", code: "organizations" },
+                            { name: "AWS Config Rules", code: "config" },
+                            { name: "AWS Control Tower Guardrails", code: "control-tower" }
+                        ],
+                        supporting: [
+                            { name: "AWS IAM Policies", code: "iam" },
+                            { name: "AWS Resource Access Manager", code: "ram" }
+                        ]
+                    },
+                    "Blueprints": {
+                        primary: [
+                            { name: "AWS Service Catalog", code: "service-catalog" },
+                            { name: "AWS Control Tower Account Factory", code: "control-tower" },
+                            { name: "AWS CloudFormation StackSets", code: "cloudformation" }
+                        ],
+                        supporting: [
+                            { name: "AWS CDK", code: "cdk" },
+                            { name: "AWS Proton", code: "proton" }
+                        ]
+                    },
+                    "Compliance Reports": {
+                        primary: [
+                            { name: "AWS Audit Manager", code: "audit-manager" },
+                            { name: "AWS Security Hub", code: "security-hub" },
+                            { name: "AWS Config Compliance Dashboard", code: "config" }
+                        ],
+                        supporting: [
+                            { name: "AWS Artifact", code: "artifact" },
+                            { name: "Amazon QuickSight", code: "quicksight" }
+                        ]
+                    },
+                    "Audit Trails": {
+                        primary: [
+                            { name: "AWS CloudTrail", code: "cloudtrail" },
+                            { name: "AWS Config", code: "config" },
+                            { name: "Amazon S3 Object Lock", code: "s3" }
+                        ],
+                        supporting: [
+                            { name: "Amazon CloudWatch Logs", code: "cloudwatch" },
+                            { name: "AWS CloudTrail Lake", code: "cloudtrail" }
+                        ]
+                    },
+                    "Regulatory Standards": {
+                        primary: [
+                            { name: "AWS Artifact", code: "artifact" },
+                            { name: "AWS Audit Manager", code: "audit-manager" },
+                            { name: "AWS Security Hub Compliance Standards", code: "security-hub" }
+                        ],
+                        supporting: [
+                            { name: "AWS Config Conformance Packs", code: "config" },
+                            { name: "AWS Compliance Center", code: "compliance" }
+                        ]
+                    },
+                    "Data Residency": {
+                        primary: [
+                            { name: "AWS Regions", code: "global-infrastructure" },
+                            { name: "AWS Organizations SCPs", code: "organizations" },
+                            { name: "AWS Config Rules (Region restrictions)", code: "config" }
+                        ],
+                        supporting: [
+                            { name: "Amazon S3 Bucket Policies", code: "s3" },
+                            { name: "AWS PrivateLink", code: "privatelink" }
+                        ]
+                    }
+                }
+            },
+            "Finance Management": {
+                icon: "💰",
+                class: "domain-7",
+                components: {
+                    "Cost Optimization": {
+                        primary: [
+                            { name: "AWS Compute Optimizer", code: "compute-optimizer" },
+                            { name: "AWS Cost Explorer", code: "cost-explorer" },
+                            { name: "AWS Trusted Advisor", code: "trustedadvisor" }
+                        ],
+                        supporting: [
+                            { name: "AWS Cost Anomaly Detection", code: "cost-explorer" },
+                            { name: "Amazon CloudWatch", code: "cloudwatch" }
+                        ]
+                    },
+                    "Budget Controls": {
+                        primary: [
+                            { name: "AWS Budgets", code: "budgets" },
+                            { name: "AWS Cost Anomaly Detection", code: "cost-explorer" }
+                        ],
+                        supporting: [
+                            { name: "Amazon SNS", code: "sns" },
+                            { name: "AWS Lambda", code: "lambda" },
+                            { name: "AWS Chatbot", code: "chatbot" }
+                        ]
+                    },
+                    "Chargeback Models": {
+                        primary: [
+                            { name: "AWS Cost Allocation Tags", code: "billing" },
+                            { name: "AWS Cost Categories", code: "billing" },
+                            { name: "AWS Cost Explorer", code: "cost-explorer" }
+                        ],
+                        supporting: [
+                            { name: "Amazon QuickSight", code: "quicksight" },
+                            { name: "AWS Cost and Usage Report", code: "billing" }
+                        ]
+                    },
+                    "Cost Allocation": {
+                        primary: [
+                            { name: "AWS Cost Allocation Tags", code: "billing" },
+                            { name: "AWS Cost Categories", code: "billing" },
+                            { name: "AWS Organizations Consolidated Billing", code: "organizations" }
+                        ],
+                        supporting: [
+                            { name: "AWS Cost Explorer", code: "cost-explorer" },
+                            { name: "AWS Cost and Usage Report", code: "billing" }
+                        ]
+                    },
+                    "Reserved Instances": {
+                        primary: [
+                            { name: "AWS Reserved Instances", code: "ec2" },
+                            { name: "AWS Savings Plans", code: "savings-plans" },
+                            { name: "Amazon EC2 Reserved Instance Marketplace", code: "ec2" }
+                        ],
+                        supporting: [
+                            { name: "AWS Cost Explorer RI/SP Recommendations", code: "cost-explorer" },
+                            { name: "AWS Compute Optimizer", code: "compute-optimizer" }
+                        ]
+                    },
+                    "Usage Analytics": {
+                        primary: [
+                            { name: "AWS Cost and Usage Report", code: "billing" },
+                            { name: "AWS Cost Explorer", code: "cost-explorer" },
+                            { name: "Amazon QuickSight", code: "quicksight" }
+                        ],
+                        supporting: [
+                            { name: "AWS Data Exchange", code: "data-exchange" },
+                            { name: "Amazon Athena", code: "athena" },
+                            { name: "AWS Glue", code: "glue" }
+                        ]
+                    }
+                }
+            }
+        };
+
+        // Generate HTML from data
+        function generateDomainHTML() {
+            const grid = document.getElementById('domainsGrid');
+            let domainIndex = 1;
+
+            for (const [domainName, domainData] of Object.entries(awsServicesData)) {
+                const domainCard = document.createElement('div');
+                domainCard.className = `domain-card ${domainData.class}`;
+                
+                let componentsHTML = '';
+                let componentIndex = 1;
+
+                for (const [componentName, services] of Object.entries(domainData.components)) {
+                    const componentId = `${domainIndex}-${componentIndex}`;
+                    
+                    let servicesHTML = '';
+                    
+                    if (services.primary && services.primary.length > 0) {
+                        servicesHTML += '<div class="service-category">';
+                        servicesHTML += '<div class="service-category-title">Primary Services</div>';
+                        services.primary.forEach(service => {
+                            servicesHTML += `
+                                <div class="service-item">
+                                    <span class="service-name">${service.name}</span>
+                                    <span class="service-code">${service.code}</span>
+                                </div>
+                            `;
+                        });
+                        servicesHTML += '</div>';
+                    }
+
+                    if (services.supporting && services.supporting.length > 0) {
+                        servicesHTML += '<div class="service-category">';
+                        servicesHTML += '<div class="service-category-title">Supporting Services</div>';
+                        services.supporting.forEach(service => {
+                            servicesHTML += `
+                                <div class="service-item">
+                                    <span class="service-name">${service.name}</span>
+                                    <span class="service-code">${service.code}</span>
+                                </div>
+                            `;
+                        });
+                        servicesHTML += '</div>';
+                    }
+
+                    componentsHTML += `
+                        <div class="component-item" onclick="toggleComponent(event, '${componentId}')">
+                            <div class="component-header">
+                                <span>${componentName}</span>
+                                <span class="component-icon" id="icon-${componentId}">▼</span>
+                            </div>
+                            <div class="services-container" id="services-${componentId}">
+                                ${servicesHTML}
+                            </div>
+                        </div>
+                    `;
+                    componentIndex++;
+                }
+
+                domainCard.innerHTML = `
+                    <div class="domain-header" onclick="toggleDomain(${domainIndex})">
+                        <div class="domain-icon">${domainData.icon}</div>
+                        <div class="domain-title">${domainName}</div>
+                    </div>
+                    <div class="toggle-btn" onclick="toggleDomain(${domainIndex})">
+                        <span id="toggle-text-${domainIndex}">Show Components</span>
+                        <span id="toggle-icon-${domainIndex}">▼</span>
+                    </div>
+                    <div class="components-container" id="domain-${domainIndex}">
+                        ${componentsHTML}
+                    </div>
+                `;
+
+                grid.appendChild(domainCard);
+                domainIndex++;
+            }
+        }
+
+        // Toggle functions
+        function toggleDomain(domainNum) {
+            const container = document.getElementById(`domain-${domainNum}`);
+            const toggleText = document.getElementById(`toggle-text-${domainNum}`);
+            const toggleIcon = document.getElementById(`toggle-icon-${domainNum}`);
+            
+            if (container.classList.contains('active')) {
+                container.classList.remove('active');
+                toggleText.textContent = 'Show Components';
+                toggleIcon.textContent = '▼';
+            } else {
+                container.classList.add('active');
+                toggleText.textContent = 'Hide Components';
+                toggleIcon.textContent = '▲';
+            }
+        }
+
+        function toggleComponent(event, componentId) {
+            event.stopPropagation();
+            const services = document.getElementById(`services-${componentId}`);
+            const icon = document.getElementById(`icon-${componentId}`);
+            
+            if (services.classList.contains('active')) {
+                services.classList.remove('active');
+                icon.classList.remove('rotated');
+            } else {
+                services.classList.add('active');
+                icon.classList.add('rotated');
+            }
+        }
+
+        function expandAll() {
+            let domainIndex = 1;
+            for (const domain in awsServicesData) {
+                const container = document.getElementById(`domain-${domainIndex}`);
+                const toggleText = document.getElementById(`toggle-text-${domainIndex}`);
+                const toggleIcon = document.getElementById(`toggle-icon-${domainIndex}`);
+                
+                if (container) {
+                    container.classList.add('active');
+                    toggleText.textContent = 'Hide Components';
+                    toggleIcon.textContent = '▲';
+
+                    let componentIndex = 1;
+                    for (const component in awsServicesData[domain].components) {
+                        const services = document.getElementById(`services-${domainIndex}-${componentIndex}`);
+                        const icon = document.getElementById(`icon-${domainIndex}-${componentIndex}`);
+                        if (services) {
+                            services.classList.add('active');
+                            icon.classList.add('rotated');
+                        }
+                        componentIndex++;
+                    }
+                }
+                domainIndex++;
+            }
+        }
+
+        function collapseAll() {
+            let domainIndex = 1;
+            for (const domain in awsServicesData) {
+                const container = document.getElementById(`domain-${domainIndex}`);
+                const toggleText = document.getElementById(`toggle-text-${domainIndex}`);
+                const toggleIcon = document.getElementById(`toggle-icon-${domainIndex}`);
+                
+                if (container) {
+                    container.classList.remove('active');
+                    toggleText.textContent = 'Show Components';
+                    toggleIcon.textContent = '▼';
+
+                    let componentIndex = 1;
+                    for (const component in awsServicesData[domain].components) {
+                        const services = document.getElementById(`services-${domainIndex}-${componentIndex}`);
+                        const icon = document.getElementById(`icon-${domainIndex}-${componentIndex}`);
+                        if (services) {
+                            services.classList.remove('active');
+                            icon.classList.remove('rotated');
+                        }
+                        componentIndex++;
+                    }
+                }
+                domainIndex++;
+            }
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            let csv = 'Domain,Component,Service Type,Service Name,Service Code\n';
+            
+            for (const [domainName, domainData] of Object.entries(awsServicesData)) {
+                for (const [componentName, services] of Object.entries(domainData.components)) {
+                    if (services.primary) {
+                        services.primary.forEach(service => {
+                            csv += `"${domainName}","${componentName}","Primary","${service.name}","${service.code}"\n`;
+                        });
+                    }
+                    if (services.supporting) {
+                        services.supporting.forEach(service => {
+                            csv += `"${domainName}","${componentName}","Supporting","${service.name}","${service.code}"\n`;
+                        });
+                    }
+                }
+            }
+
+            downloadFile(csv, 'aws-landing-zone-services.csv', 'text/csv');
+        }
+
+        // Export to JSON
+        function exportToJSON() {
+            const json = JSON.stringify(awsServicesData, null, 2);
+            downloadFile(json, 'aws-landing-zone-services.json', 'application/json');
+        }
+
+        // Download helper
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type: type });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'e' || event.key === 'E') {
+                expandAll();
+            } else if (event.key === 'c' || event.key === 'C') {
+                collapseAll();
+            } else if (event.key === 't' || event.key === 'T') {
+                scrollToTop();
+            }
+        });
+
+        // Initialize
+        window.onload = function() {
+            generateDomainHTML();
+        };
+    </script>
+
+</body></html>

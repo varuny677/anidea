@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AWS BFSI Cloud Landing Zone Service Mapper (Hub & Spoke Added)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+        font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+        background:linear-gradient(135deg,#101522 0%,#0d2038 50%,#083654 100%);
+        min-height:100vh;
+        padding:20px;
+        color:#fff;
+    }
+    .container { max-width:1850px; margin:0 auto; }
+    .header {
+        text-align:center;
+        margin-bottom:40px;
+        padding:30px;
+        background:rgba(255,255,255,0.05);
+        backdrop-filter:blur(10px);
+        border-radius:20px;
+        border:2px solid rgba(0,173,239,0.35);
+    }
+    .header h1 {
+        font-size:2.9em;
+        margin-bottom:15px;
+        background:linear-gradient(135deg,#00ADEE,#13C4A3,#FADB5F);
+        -webkit-background-clip:text;
+        -webkit-text-fill-color:transparent;
+        background-clip:text;
+        font-weight:800;
+        letter-spacing:1px;
+    }
+    .header p { color:#b9c9d8; font-size:1.05em; }
+    .version-badge {
+        display:inline-block;
+        margin-top:10px;
+        background:linear-gradient(135deg,#00ADEE,#13C4A3);
+        padding:6px 18px;
+        font-size:.8em;
+        font-weight:700;
+        border-radius:18px;
+        letter-spacing:.5px;
+    }
+    .export-controls {
+        display:flex; justify-content:center; gap:15px; margin-top:22px; flex-wrap:wrap;
+    }
+    .export-btn {
+        background:linear-gradient(135deg,#00ADEE,#13C4A3);
+        color:#042431;
+        border:none;
+        padding:11px 26px;
+        border-radius:26px;
+        font-weight:700;
+        letter-spacing:.5px;
+        cursor:pointer;
+        font-size:.9em;
+        box-shadow:0 5px 18px rgba(0,173,238,0.35);
+        transition:.3s;
+    }
+    .export-btn:hover { transform:translateY(-3px); box-shadow:0 8px 28px rgba(0,173,238,0.55); }
+
+    .domains-grid {
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(520px,1fr));
+        gap:28px;
+        margin-bottom:60px;
+    }
+    .domain-card {
+        background:rgba(255,255,255,0.055);
+        backdrop-filter:blur(10px);
+        border-radius:22px;
+        padding:24px 24px 30px;
+        border:2px solid;
+        box-shadow:0 8px 34px rgba(0,0,0,0.35);
+        transition:.4s;
+        position:relative;
+    }
+    .domain-card:hover { transform:translateY(-6px); box-shadow:0 16px 60px rgba(0,0,0,0.55); }
+    .domain-header {
+        display:flex; align-items:center; gap:14px; margin-bottom:12px;
+        cursor:pointer; padding:8px 10px; border-radius:12px; transition:.3s;
+    }
+    .domain-header:hover { background:rgba(255,255,255,0.07); }
+    .domain-icon { font-size:2.4em; line-height:1; }
+    .domain-title { font-size:1.45em; font-weight:700; letter-spacing:.5px; }
+    .domain-subtitle { font-size:.75em; letter-spacing:.12em; opacity:.8; margin-bottom:14px; text-transform:uppercase; }
+
+    .toggle-btn {
+        display:inline-flex; align-items:center; gap:8px;
+        padding:7px 16px; background:rgba(255,255,255,0.08);
+        border:1px solid rgba(255,255,255,0.22);
+        border-radius:20px; color:#fff; font-size:.75em;
+        font-weight:700; letter-spacing:.12em; cursor:pointer;
+        transition:.3s; margin-bottom:16px;
+    }
+    .toggle-btn:hover { background:rgba(255,255,255,0.16); transform:scale(1.05); }
+
+    .components-container {
+        max-height:0; overflow:hidden; opacity:0;
+        transition:max-height .65s ease, opacity .6s ease;
+    }
+    .components-container.active { max-height:6000px; opacity:1; }
+
+    .component-item {
+        background:rgba(255,255,255,0.075);
+        backdrop-filter:blur(6px);
+        padding:15px 16px 18px;
+        border-radius:14px;
+        margin-bottom:15px;
+        border:1px solid rgba(255,255,255,0.12);
+        transition:.32s;
+        cursor:pointer;
+        position:relative;
+    }
+    .component-item.new::after {
+        content:"NEW";
+        position:absolute;
+        top:8px;
+        right:12px;
+        background:linear-gradient(135deg,#FADB5F,#FF9F40);
+        color:#062b30;
+        font-size:.55rem;
+        font-weight:800;
+        padding:3px 6px;
+        border-radius:6px;
+        letter-spacing:.08em;
+    }
+    .component-item:hover { background:rgba(255,255,255,0.12); }
+
+    .component-header {
+        display:flex; justify-content:space-between; align-items:center;
+        font-weight:600; font-size:1.02em; color:#fff;
+    }
+    .component-icon { transition:transform .3s ease; font-size:.85em; }
+    .component-icon.rotated { transform:rotate(180deg); }
+
+    .services-container {
+        max-height:0; overflow:hidden;
+        transition:max-height .45s ease, opacity .45s ease, margin-top .45s ease;
+        opacity:0; margin-top:0;
+    }
+    .services-container.active { max-height:2300px; opacity:1; margin-top:15px; }
+
+    .service-category { margin-bottom:20px; }
+    .service-category-title {
+        color:#00ADEE; font-weight:800; font-size:.65rem;
+        letter-spacing:.18em; text-transform:uppercase;
+        margin-bottom:10px; padding-left:10px;
+        border-left:3px solid #00ADEE;
+    }
+    .service-item {
+        background:rgba(0,173,238,0.10);
+        padding:8px 13px;
+        border-radius:9px;
+        margin-bottom:7px;
+        border-left:3px solid #00ADEE;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        font-size:.83em;
+        transition:.22s;
+        gap:10px;
+    }
+    .service-item:hover { background:rgba(0,173,238,0.22); transform:translateX(6px); padding-left:20px; }
+    .service-name { color:#e7f7ff; font-weight:600; flex:1; }
+    .service-code {
+        background:#00ADEE; color:#042431;
+        font-weight:700; font-size:.7rem;
+        padding:3px 8px; border-radius:5px;
+        font-family:'Courier New',monospace;
+        letter-spacing:.5px; white-space:nowrap;
+    }
+
+    /* Domain color accents */
+    .d1 { border-color:#00ADEE; }
+    .d1 .domain-icon { color:#00ADEE; }
+
+    .d2 { border-color:#13C4A3; }
+    .d2 .domain-icon { color:#13C4A3; }
+
+    .d3 { border-color:#FADB5F; }
+    .d3 .domain-icon { color:#FADB5F; }
+
+    .d4 { border-color:#FF6B6B; }
+    .d4 .domain-icon { color:#FF6B6B; }
+
+    .d5 { border-color:#8F7EF5; }
+    .d5 .domain-icon { color:#8F7EF5; }
+
+    .d6 { border-color:#FF9F40; }
+    .d6 .domain-icon { color:#FF9F40; }
+
+    .d7 { border-color:#4ECDC4; }
+    .d7 .domain-icon { color:#4ECDC4; }
+
+    .d8 { border-color:#8860D0; }
+    .d8 .domain-icon { color:#8860D0; }
+
+    .controls {
+        position:fixed; bottom:30px; right:30px;
+        display:flex; flex-direction:column; gap:14px;
+        z-index:1000;
+    }
+    .control-btn {
+        background:rgba(0,173,238,0.85);
+        color:#fff; font-weight:700;
+        padding:14px 26px;
+        border:none; border-radius:30px;
+        cursor:pointer; font-size:.85em;
+        box-shadow:0 5px 22px rgba(0,0,0,0.35);
+        letter-spacing:.6px;
+        transition:.3s; white-space:nowrap;
+    }
+    .control-btn:hover { background:rgba(19,196,163,0.9); transform:translateX(-5px); box-shadow:0 10px 32px rgba(0,0,0,0.45); }
+
+    @media (max-width: 780px) {
+        .domains-grid { grid-template-columns:1fr; }
+        .header h1 { font-size:2.1em; }
+        .domain-card { padding:20px; }
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🏦 AWS BFSI Cloud Landing Zone Service Mapper</h1>
+        <p>Industry-Aligned Architecture: Banking / Financial Services / Insurance (Hub & Spoke Included)</p>
+        <span class="version-badge">Version 5.1 - Hub & Spoke Added</span>
+        <div class="export-controls">
+            <button class="export-btn" onclick="exportToCSV()">⬇️ Export CSV</button>
+            <button class="export-btn" onclick="exportToJSON()">🧾 Export JSON</button>
+        </div>
+    </div>
+
+    <div id="domainsGrid" class="domains-grid"></div>
+
+    <div class="controls">
+        <button class="control-btn" onclick="expandAll()">📂 Expand All</button>
+        <button class="control-btn" onclick="collapseAll()">📁 Collapse All</button>
+        <button class="control-btn" onclick="scrollToTop()">⬆️ Top</button>
+    </div>
+</div>
+
+<script>
+/*
+  BFSI Landing Zone Mapping (with Hub & Spoke Architecture component)
+  Each service object: { name: "AWS Key Management Service (KMS)", code: "kms" }
+  'code' is a slug for export convenience.
+*/
+const bfsiServicesData = {
+  "Resource Organization & Segmentation": {
+    icon: "📦",
+    class: "d1",
+    subtitle: "Accounts, Compliance Zones",
+    components: {
+      "Account Strategy": {
+        primary: [
+          { name: "AWS Organizations", code: "organizations" },
+          { name: "AWS Control Tower", code: "control-tower" },
+          { name: "Service Control Policies (SCPs)", code: "scp" },
+          { name: "Account Factory", code: "account-factory" }
+        ],
+        supporting: [
+          { name: "AWS IAM Identity Center", code: "sso" },
+          { name: "AWS Resource Access Manager (RAM)", code: "ram" },
+          { name: "CloudTrail (Org Trails)", code: "cloudtrail" }
+        ]
+      },
+      "Environment Segmentation": {
+        primary: [
+          { name: "Landing Zone OU Structure", code: "ou-structure" },
+          { name: "Prod / Non-Prod / Cardholder Data Scope", code: "pci-scope" },
+          { name: "Sandbox Isolation", code: "sandbox" }
+        ],
+        supporting: [
+          { name: "AWS Config Aggregators", code: "config-aggregator" },
+          { name: "Conformance Packs", code: "conformance-packs" }
+        ]
+      },
+      "Tagging & Classification": {
+        primary: [
+          { name: "Cost Allocation Tags", code: "cost-tags" },
+          { name: "Mandatory Compliance Tags (PCI/SOX)", code: "compliance-tags" },
+          { name: "Resource Groups Tagging Framework", code: "tag-framework" }
+        ],
+        supporting: [
+          { name: "AWS Tag Editor", code: "tag-editor" },
+          { name: "AWS Config Rules (Tag Enforcement)", code: "config-tags" }
+        ]
+      },
+      "Data Residency Strategy": {
+        primary: [
+          { name: "Region Selection Policy", code: "region-policy" },
+          { name: "S3 Replication Configuration", code: "s3-replication" },
+          { name: "DynamoDB Global Tables (Regulatory)", code: "dynamodb-global" }
+        ],
+        supporting: [
+          { name: "AWS CloudFront Geo Restriction", code: "cloudfront-geo" },
+          { name: "AWS Route 53 Latency Routing", code: "route53-latency" }
+        ]
+      },
+      "Naming Standards": {
+        primary: [
+          { name: "Standardized Resource Naming Patterns", code: "naming-standard" },
+          { name: "Account & OU Identifier Conventions", code: "account-naming" }
+        ],
+        supporting: [
+          { name: "Automated Validation (CI/CD)", code: "naming-ci" },
+          { name: "Governance Documentation", code: "gov-docs" }
+        ]
+      }
+    }
+  },
+
+  "Network & Connectivity": {
+    icon: "🌐",
+    class: "d2",
+    subtitle: "Payments, External Links",
+    components: {
+      "Hub & Spoke Architecture": {
+        primary: [
+          { name: "AWS Transit Gateway (Central Hub)", code: "transit-gateway" },
+          { name: "AWS Network Firewall (Central Inspection)", code: "network-firewall" },
+          { name: "Shared Services VPC", code: "shared-services-vpc" },
+          { name: "VPC Peering (Legacy Interconnects)", code: "vpc-peering" }
+        ],
+        supporting: [
+          { name: "AWS PrivateLink (Service Integration)", code: "privatelink" },
+          { name: "Amazon Route 53 Resolver (Cross-VPC DNS)", code: "route53-resolver" },
+          { name: "AWS IPAM (Central Address Management)", code: "ipam" },
+          { name: "Firewall Manager (Policy Orchestration)", code: "firewall-manager" }
+        ]
+      },
+      "Secure Payment Connectivity": {
+        primary: [
+          { name: "AWS Direct Connect", code: "direct-connect" },
+          { name: "AWS VPN", code: "vpn" },
+          { name: "AWS Transit Gateway", code: "transit-gateway" },
+          { name: "AWS PrivateLink", code: "privatelink" }
+        ],
+        supporting: [
+          { name: "VPC Endpoints (Interface/Gateway)", code: "vpc-endpoints" },
+          { name: "Global Accelerator", code: "global-accelerator" }
+        ]
+      },
+      "External Network Integration": {
+        primary: [
+          { name: "SWIFT / Payment Network Connectivity (Concept)", code: "swift-connect" },
+          { name: "Card Network Secure Channels", code: "card-networks" },
+          { name: "Partner Connectivity (PrivateLink)", code: "partner-privatelink" }
+        ],
+        supporting: [
+          { name: "Route 53 Resolver", code: "route53-resolver" },
+          { name: "AWS Certificate Manager", code: "acm" }
+        ]
+      },
+      "Edge & Channel Delivery": {
+        primary: [
+          { name: "Amazon CloudFront", code: "cloudfront" },
+          { name: "AWS API Gateway", code: "api-gateway" },
+          { name: "AWS Global Accelerator", code: "global-accelerator" }
+        ],
+        supporting: [
+          { name: "Amazon S3 (Static Content)", code: "s3" },
+          { name: "AWS WAF", code: "waf" }
+        ]
+      },
+      "Network Security Zoning": {
+        primary: [
+          { name: "VPC Segmentation (Multiple VPCs)", code: "vpc" },
+          { name: "AWS Network Firewall", code: "network-firewall" },
+          { name: "Security Groups", code: "security-groups" },
+          { name: "Network Access Control Lists", code: "nacl" }
+        ],
+        supporting: [
+          { name: "Firewall Manager", code: "firewall-manager" },
+          { name: "Amazon GuardDuty (Network Triage)", code: "guardduty" }
+        ]
+      },
+      "DNS & Traffic Management": {
+        primary: [
+          { name: "Amazon Route 53", code: "route53" },
+          { name: "Private Hosted Zones", code: "private-hosted-zone" },
+          { name: "Latency / Weighted Routing", code: "routing-policies" }
+        ],
+        supporting: [
+          { name: "Route 53 Health Checks", code: "health-checks" },
+          { name: "DNS Firewall", code: "dns-firewall" }
+        ]
+      }
+    }
+  },
+
+  "Identity, Access & Fraud": {
+    icon: "🔐",
+    class: "d3",
+    subtitle: "Auth & Fraud Mitigation",
+    components: {
+      "Workforce Identity": {
+        primary: [
+          { name: "AWS IAM Identity Center", code: "sso" },
+          { name: "IAM Roles & Policies", code: "iam" },
+          { name: "IAM Access Analyzer", code: "access-analyzer" }
+        ],
+        supporting: [
+          { name: "CloudTrail (Auth Auditing)", code: "cloudtrail" },
+          { name: "AWS Config (Drift Detection)", code: "config" }
+        ]
+      },
+      "Customer Identity": {
+        primary: [
+          { name: "Amazon Cognito", code: "cognito" },
+          { name: "API Gateway Authorizers", code: "api-authorizers" },
+          { name: "Lambda@Edge Auth Hooks", code: "lambda-edge" }
+        ],
+        supporting: [
+          { name: "Secrets Manager (JWT Secrets)", code: "secrets-manager" },
+          { name: "DynamoDB (Session Store)", code: "dynamodb" }
+        ]
+      },
+      "Privileged Access Management": {
+        primary: [
+          { name: "AWS Systems Manager Session Manager", code: "session-manager" },
+          { name: "IAM Role Chaining / Elevation", code: "role-chaining" },
+          { name: "Break Glass Accounts", code: "break-glass" }
+        ],
+        supporting: [
+          { name: "CloudWatch Alarms (Privilege Events)", code: "cloudwatch" },
+          { name: "Config Rules (Privileged Tracking)", code: "config-rules" }
+        ]
+      },
+      "Access Policies & RBAC": {
+        primary: [
+          { name: "IAM Managed Policies", code: "managed-policies" },
+          { name: "Service Control Policies", code: "scp" },
+          { name: "Permission Boundaries", code: "perm-boundary" }
+        ],
+        supporting: [
+          { name: "Access Analyzer Policy Validation", code: "policy-validation" },
+          { name: "Organizations Delegated Admin", code: "delegated-admin" }
+        ]
+      },
+      "Fraud Detection": {
+        primary: [
+          { name: "Amazon Fraud Detector", code: "fraud-detector" },
+          { name: "Amazon GuardDuty", code: "guardduty" },
+          { name: "Amazon CloudWatch (Anomaly Detection)", code: "cw-anomaly" }
+        ],
+        supporting: [
+          { name: "Amazon SageMaker (Fraud Models)", code: "sagemaker" },
+          { name: "Kinesis Data Streams (Event Feed)", code: "kinesis-streams" }
+        ]
+      },
+      "MFA & Conditional Access": {
+        primary: [
+          { name: "IAM MFA Enforcement", code: "iam-mfa" },
+          { name: "Cognito MFA (TOTP/SMS)", code: "cognito-mfa" },
+          { name: "Device-Based Policy (Custom Logic)", code: "device-policy" }
+        ],
+        supporting: [
+          { name: "CloudFront Geo Restriction (Conditional)", code: "geo-restriction" },
+          { name: "Lambda Pre-Token Hooks", code: "lambda-hooks" }
+        ]
+      }
+    }
+  },
+
+  "Security & Cryptography": {
+    icon: "🛡️",
+    class: "d4",
+    subtitle: "Protection & Encryption",
+    components: {
+      "Key Management": {
+        primary: [
+          { name: "AWS Key Management Service (KMS)", code: "kms" },
+          { name: "AWS CloudHSM", code: "cloudhsm" },
+          { name: "AWS Payment Cryptography", code: "payment-crypto" }
+        ],
+        supporting: [
+          { name: "KMS Custom Key Stores", code: "kms-custom-store" },
+          { name: "Nitro Enclaves", code: "nitro-enclaves" }
+        ]
+      },
+      "Data Encryption": {
+        primary: [
+          { name: "S3 Server-Side Encryption", code: "s3-encryption" },
+          { name: "EBS Encryption", code: "ebs-encryption" },
+          { name: "RDS/Aurora Encryption", code: "rds-encryption" }
+        ],
+        supporting: [
+          { name: "DynamoDB Encryption", code: "dynamodb-encryption" },
+          { name: "Redshift Encryption", code: "redshift-encryption" }
+        ]
+      },
+      "Threat Detection": {
+        primary: [
+          { name: "Amazon GuardDuty", code: "guardduty" },
+          { name: "AWS Security Hub", code: "security-hub" },
+          { name: "Amazon Detective", code: "detective" }
+        ],
+        supporting: [
+          { name: "AWS Shield Advanced", code: "shield-adv" },
+          { name: "AWS WAF", code: "waf" }
+        ]
+      },
+      "Secrets & Tokenization": {
+        primary: [
+          { name: "AWS Secrets Manager", code: "secrets-manager" },
+          { name: "AWS Parameter Store", code: "ssm-parameters" },
+          { name: "Custom Tokenization Lambda", code: "tokenization-lambda" }
+        ],
+        supporting: [
+          { name: "DynamoDB (Token Map)", code: "dynamodb-token-map" },
+          { name: "KMS Data Keys (DEK)", code: "kms-dek" }
+        ]
+      },
+      "Zero Trust & Isolation": {
+        primary: [
+          { name: "VPC Endpoint Policies", code: "vpc-endpoint-policy" },
+          { name: "AWS Verified Access", code: "verified-access" },
+          { name: "IAM Condition Keys", code: "iam-conditions" }
+        ],
+        supporting: [
+          { name: "Network Firewall Segmentation", code: "network-firewall" },
+          { name: "Nitro Enclaves (Isolation)", code: "nitro-enclaves" }
+        ]
+      },
+      "Vulnerability & Patch Mgmt": {
+        primary: [
+          { name: "Amazon Inspector", code: "inspector" },
+          { name: "Systems Manager Patch Manager", code: "patch-manager" },
+          { name: "ECR Image Scanning", code: "ecr-scan" }
+        ],
+        supporting: [
+          { name: "CodeBuild (Security Tests)", code: "codebuild" },
+          { name: "Security Hub Findings Aggregation", code: "shub-findings" }
+        ]
+      }
+    }
+  },
+
+  "Data Governance & Privacy": {
+    icon: "📊",
+    class: "d5",
+    subtitle: "Data Stewardship & PII",
+    components: {
+      "Data Lake Governance": {
+        primary: [
+          { name: "AWS Lake Formation", code: "lake-formation" },
+          { name: "AWS Glue Data Catalog", code: "glue-catalog" },
+          { name: "S3 Bucket Policies (Access)", code: "s3-policy" }
+        ],
+        supporting: [
+          { name: "AWS Glue Jobs (Curation)", code: "glue-jobs" },
+          { name: "Athena (Access Auditing)", code: "athena" }
+        ]
+      },
+      "Data Classification & PII": {
+        primary: [
+          { name: "Amazon Macie", code: "macie" },
+          { name: "Lake Formation Tag-Based Access", code: "lf-tags" },
+          { name: "Redshift Column-Level Access", code: "redshift-col-access" }
+        ],
+        supporting: [
+          { name: "Glue ETL Masking", code: "glue-masking" },
+          { name: "S3 Object Lambda (Dynamic Redaction)", code: "s3-object-lambda" }
+        ]
+      },
+      "Lineage & Metadata": {
+        primary: [
+          { name: "AWS Glue Lineage", code: "glue-lineage" },
+          { name: "AWS DataZone", code: "datazone" },
+          { name: "CloudTrail Data Events", code: "cloudtrail-data" }
+        ],
+        supporting: [
+          { name: "Athena Query History", code: "athena-history" },
+          { name: "EMR Spark Atlas Integration (Concept)", code: "emr-atlas" }
+        ]
+      },
+      "Data Quality & Stewardship": {
+        primary: [
+          { name: "Glue Data Quality Rules", code: "glue-quality" },
+          { name: "Deequ (Custom library)", code: "deequ" },
+          { name: "Athena / Redshift Validation Queries", code: "validation-queries" }
+        ],
+        supporting: [
+          { name: "QuickSight (Quality Dashboards)", code: "quicksight" },
+          { name: "S3 Inventory Reports", code: "s3-inventory" }
+        ]
+      },
+      "Privacy Controls & Access": {
+        primary: [
+          { name: "Lake Formation Fine-Grained Access", code: "lf-fga" },
+          { name: "KMS Customer Managed Keys", code: "kms" },
+          { name: "IAM Attribute-Based Access Control (ABAC)", code: "abac" }
+        ],
+        supporting: [
+          { name: "Secrets Manager (PII Key Storage)", code: "secrets-manager" },
+          { name: "Macie Findings Workflows", code: "macie-findings" }
+        ]
+      },
+      "Backup & Retention": {
+        primary: [
+          { name: "AWS Backup", code: "backup" },
+          { name: "S3 Lifecycle Policies", code: "s3-lifecycle" },
+          { name: "RDS Automated Backups", code: "rds-backups" }
+        ],
+        supporting: [
+          { name: "DynamoDB Point-in-Time Recovery", code: "dynamodb-pitr" },
+          { name: "EBS Snapshots", code: "ebs-snapshots" }
+        ]
+      }
+    }
+  },
+
+  "Regulatory & Compliance & Audit": {
+    icon: "📋",
+    class: "d6",
+    subtitle: "PCI / SOX / GDPR / Audit",
+    components: {
+      "PCI DSS Controls": {
+        primary: [
+          { name: "AWS Audit Manager (PCI Template)", code: "audit-manager" },
+          { name: "AWS Artifact (Reports)", code: "artifact" },
+          { name: "Config Rules (Scope Enforcement)", code: "config-rules" }
+        ],
+        supporting: [
+          { name: "CloudTrail Lake (Forensics)", code: "cloudtrail-lake" },
+          { name: "Security Hub PCI Standard", code: "shub-pci" }
+        ]
+      },
+      "SOX & Financial Reporting": {
+        primary: [
+          { name: "Audit Manager (SOX Framework)", code: "audit-sox" },
+          { name: "CloudTrail (API Logs)", code: "cloudtrail" },
+          { name: "AWS IAM Access Analyzer", code: "access-analyzer" }
+        ],
+        supporting: [
+          { name: "Config Change Tracking", code: "config" },
+          { name: "S3 Object Lock (WORM)", code: "s3-object-lock" }
+        ]
+      },
+      "GDPR & Data Residency": {
+        primary: [
+          { name: "S3 Replication (EU Residency)", code: "s3-repl-eu" },
+          { name: "CloudFront Geo Restrictions", code: "geo-restrict" },
+          { name: "Macie (Personal Data)", code: "macie" }
+        ],
+        supporting: [
+          { name: "KMS EU Key Policies", code: "kms-eu" },
+          { name: "Redshift Data Sharing (Regional)", code: "redshift-share" }
+        ]
+      },
+      "Compliance Monitoring": {
+        primary: [
+          { name: "AWS Security Hub", code: "security-hub" },
+          { name: "AWS Config Conformance Packs", code: "conformance-packs" },
+          { name: "Amazon Detective (Investigations)", code: "detective" }
+        ],
+        supporting: [
+          { name: "CloudWatch Metrics Dashboards", code: "cw-dashboard" },
+          { name: "GuardDuty Findings", code: "guardduty" }
+        ]
+      },
+      "Audit Trails & Evidencing": {
+        primary: [
+          { name: "CloudTrail Lake Queries", code: "cloudtrail-lake" },
+          { name: "AWS Audit Manager Evidence Store", code: "audit-evidence" },
+          { name: "S3 Immutable Storage", code: "s3-immutable" }
+        ],
+        supporting: [
+          { name: "CloudWatch Log Groups (Retention)", code: "log-groups" },
+          { name: "Athena (Trail Query)", code: "athena" }
+        ]
+      },
+      "Policy Management & Governance": {
+        primary: [
+          { name: "AWS Organizations SCPs", code: "scp" },
+          { name: "AWS Config Rules", code: "config-rules" },
+          { name: "Control Tower Guardrails", code: "guardrails" }
+        ],
+        supporting: [
+          { name: "CloudFormation StackSets", code: "stacksets" },
+          { name: "AppConfig Policy Distribution", code: "appconfig" }
+        ]
+      }
+    }
+  },
+
+  "Resilience & Operations": {
+    icon: "🔧",
+    class: "d7",
+    subtitle: "Reliability & Continuity",
+    components: {
+      "Monitoring & Observability": {
+        primary: [
+          { name: "Amazon CloudWatch", code: "cloudwatch" },
+          { name: "AWS X-Ray", code: "xray" },
+          { name: "AWS OpenSearch (Logs/Analytics)", code: "opensearch" }
+        ],
+        supporting: [
+          { name: "CloudWatch Synthetics", code: "synthetics" },
+          { name: "AWS Health Dashboard", code: "health" }
+        ]
+      },
+      "Incident & Operations": {
+        primary: [
+          { name: "AWS Systems Manager OpsCenter", code: "opscenter" },
+          { name: "AWS DevOps Guru", code: "devops-guru" },
+          { name: "AWS Chatbot (Notifications)", code: "chatbot" }
+        ],
+        supporting: [
+          { name: "SNS (Alert Fanout)", code: "sns" },
+            { name: "PagerDuty Integration (Webhook)", code: "pagerduty" }
+        ]
+      },
+      "Disaster Recovery & Continuity": {
+        primary: [
+          { name: "AWS Elastic Disaster Recovery", code: "drs" },
+          { name: "RDS Multi-AZ & Read Replicas", code: "rds-multiaz" },
+          { name: "Route 53 Failover Routing", code: "route53-failover" }
+        ],
+        supporting: [
+          { name: "S3 Cross-Region Replication", code: "s3-crr" },
+          { name: "EBS Snapshots (Cross-Region)", code: "ebs-snap-xr" }
+        ]
+      },
+      "Performance & Capacity": {
+        primary: [
+          { name: "Auto Scaling Groups", code: "asg" },
+          { name: "AWS Compute Optimizer", code: "compute-optimizer" },
+          { name: "Amazon ElastiCache", code: "elasticache" }
+        ],
+        supporting: [
+          { name: "Application Load Balancer", code: "alb" },
+          { name: "DynamoDB Auto Scaling", code: "dynamodb-autoscale" }
+        ]
+      },
+      "Change & Configuration Mgmt": {
+        primary: [
+          { name: "Systems Manager Parameter Store", code: "ssm-parameters" },
+          { name: "AWS AppConfig", code: "appconfig" },
+          { name: "CloudFormation / CDK", code: "cloudformation-cdk" }
+        ],
+        supporting: [
+          { name: "AWS CodePipeline", code: "codepipeline" },
+          { name: "AWS CodeBuild", code: "codebuild" }
+        ]
+      },
+      "Service Health & Reliability": {
+        primary: [
+          { name: "AWS Resilience Hub", code: "resilience-hub" },
+          { name: "AWS Health APIs", code: "health-api" },
+          { name: "CloudWatch Alarms", code: "cw-alarms" }
+        ],
+        supporting: [
+          { name: "Well-Architected Tool", code: "well-architected" },
+          { name: "Trusted Advisor (Availability)", code: "trusted-advisor" }
+        ]
+      }
+    }
+  },
+
+  "Finance Optimization & Analytics": {
+    icon: "💰",
+    class: "d8",
+    subtitle: "FinOps & Cost Governance",
+    components: {
+      "Cost Optimization": {
+        primary: [
+          { name: "AWS Compute Optimizer", code: "compute-optimizer" },
+          { name: "Trusted Advisor (Cost)", code: "trusted-advisor" },
+          { name: "S3 Storage Class Analysis", code: "s3-storage-analysis" }
+        ],
+        supporting: [
+          { name: "CloudWatch Metrics (Usage)", code: "cw-metrics" },
+          { name: "Athena CUR Queries", code: "athena-cur" }
+        ]
+      },
+      "Budgeting & Forecasting": {
+        primary: [
+          { name: "AWS Budgets", code: "budgets" },
+          { name: "Cost Explorer Forecast", code: "cost-explorer" },
+          { name: "Savings Plans Recommendations", code: "savings-recommendations" }
+        ],
+        supporting: [
+          { name: "SNS Budget Alerts", code: "sns-alerts" },
+          { name: "QuickSight (Cost Dashboards)", code: "quicksight-cost" }
+        ]
+      },
+      "Chargeback & FinOps": {
+        primary: [
+          { name: "Cost & Usage Report (CUR)", code: "cur" },
+          { name: "Cost Allocation Tags", code: "cost-tags" },
+          { name: "Athena CUR Table", code: "athena-cur-table" }
+        ],
+        supporting: [
+          { name: "Glue ETL Cost Aggregations", code: "glue-cost-etl" },
+          { name: "QuickSight Department Dashboards", code: "quicksight-dept" }
+        ]
+      },
+      "Reserved Capacity": {
+        primary: [
+          { name: "Reserved Instances (EC2/RDS)", code: "reserved-instances" },
+          { name: "Savings Plans", code: "savings-plans" },
+          { name: "DynamoDB Reserved Capacity", code: "ddb-reserved" }
+        ],
+        supporting: [
+          { name: "EC2 Capacity Reservations", code: "capacity-reservations" },
+          { name: "RI Marketplace Management", code: "ri-marketplace" }
+        ]
+      },
+      "Usage Analytics & Reporting": {
+        primary: [
+          { name: "Cost Explorer", code: "cost-explorer" },
+          { name: "CUR Athena + QuickSight", code: "cur-analytics" },
+          { name: "CloudWatch Usage Metrics", code: "cw-usage" }
+        ],
+        supporting: [
+          { name: "Glue Data Catalog (Cost Schema)", code: "glue-cost-schema" },
+          { name: "S3 Partitioned CUR Storage", code: "s3-cur" }
+        ]
+      },
+      "Spend Governance": {
+        primary: [
+          { name: "Control Tower Guardrails (Cost)", code: "cost-guardrails" },
+          { name: "SCP Deny Expensive Regions", code: "scp-deny" },
+          { name: "Budgets Enforcement (Alerts)", code: "budget-enforcement" }
+        ],
+        supporting: [
+          { name: "Config Rules (Instance Types)", code: "config-instance" },
+          { name: "Trusted Advisor (Idle Resources)", code: "ta-idle" }
+        ]
+      }
+    }
+  }
+};
+
+/* Dynamic generation */
+function generateDomainHTML() {
+  const grid = document.getElementById('domainsGrid');
+  let domainIndex = 1;
+  for (const [domainName, domainData] of Object.entries(bfsiServicesData)) {
+    const card = document.createElement('div');
+    card.className = `domain-card ${domainData.class}`;
+
+    let componentsHTML = '';
+    let componentIndex = 1;
+
+    for (const [componentName, services] of Object.entries(domainData.components)) {
+      const componentId = `${domainIndex}-${componentIndex}`;
+      let servicesHTML = '';
+
+      if (services.primary && services.primary.length) {
+        servicesHTML += `<div class="service-category">
+          <div class="service-category-title">PRIMARY SERVICES</div>
+          ${services.primary.map(s => `
+            <div class="service-item">
+              <span class="service-name">${s.name}</span>
+              <span class="service-code">${s.code}</span>
+            </div>`).join('')}
+        </div>`;
+      }
+      if (services.supporting && services.supporting.length) {
+        servicesHTML += `<div class="service-category">
+          <div class="service-category-title">SUPPORTING SERVICES</div>
+          ${services.supporting.map(s => `
+            <div class="service-item">
+              <span class="service-name">${s.name}</span>
+              <span class="service-code">${s.code}</span>
+            </div>`).join('')}
+        </div>`;
+      }
+
+      const newClass = (componentName === 'Hub & Spoke Architecture') ? ' component-item new' : ' component-item';
+      componentsHTML += `
+        <div class="${newClass.trim()}" onclick="toggleComponent(event,'${componentId}')">
+          <div class="component-header">
+            <span>${componentName}</span>
+            <span class="component-icon" id="icon-${componentId}">▼</span>
+          </div>
+          <div class="services-container" id="services-${componentId}">
+            ${servicesHTML}
+          </div>
+        </div>
+      `;
+      componentIndex++;
+    }
+
+    card.innerHTML = `
+      <div class="domain-header" onclick="toggleDomain(${domainIndex})">
+        <div class="domain-icon">${domainData.icon}</div>
+        <div>
+          <div class="domain-title">${domainName}</div>
+          <div class="domain-subtitle">${domainData.subtitle || ''}</div>
+        </div>
+      </div>
+      <div class="toggle-btn" onclick="toggleDomain(${domainIndex})">
+        <span id="toggle-text-${domainIndex}">Show Components</span>
+        <span id="toggle-icon-${domainIndex}">▼</span>
+      </div>
+      <div class="components-container" id="domain-${domainIndex}">
+        ${componentsHTML}
+      </div>
+    `;
+    grid.appendChild(card);
+    domainIndex++;
+  }
+}
+
+/* Toggles */
+function toggleDomain(num) {
+  const container = document.getElementById(`domain-${num}`);
+  const text = document.getElementById(`toggle-text-${num}`);
+  const icon = document.getElementById(`toggle-icon-${num}`);
+  if (!container) return;
+  if (container.classList.contains('active')) {
+    container.classList.remove('active');
+    text.textContent = 'Show Components';
+    icon.textContent = '▼';
+  } else {
+    container.classList.add('active');
+    text.textContent = 'Hide Components';
+    icon.textContent = '▲';
+  }
+}
+
+function toggleComponent(event, id) {
+  event.stopPropagation();
+  const services = document.getElementById(`services-${id}`);
+  const icon = document.getElementById(`icon-${id}`);
+  if (!services) return;
+  if (services.classList.contains('active')) {
+    services.classList.remove('active');
+    icon.classList.remove('rotated');
+  } else {
+    services.classList.add('active');
+    icon.classList.add('rotated');
+  }
+}
+
+function expandAll() {
+  let domainIndex = 1;
+  for (const _domain in bfsiServicesData) {
+    const container = document.getElementById(`domain-${domainIndex}`);
+    const text = document.getElementById(`toggle-text-${domainIndex}`);
+    const icon = document.getElementById(`toggle-icon-${domainIndex}`);
+    if (container) {
+      container.classList.add('active');
+      text.textContent = 'Hide Components';
+      icon.textContent = '▲';
+      let componentIndex = 1;
+      for (const _component in bfsiServicesData[_domain].components) {
+        const services = document.getElementById(`services-${domainIndex}-${componentIndex}`);
+        const cIcon = document.getElementById(`icon-${domainIndex}-${componentIndex}`);
+        if (services && cIcon) {
+          services.classList.add('active');
+            cIcon.classList.add('rotated');
+        }
+        componentIndex++;
+      }
+    }
+    domainIndex++;
+  }
+}
+
+function collapseAll() {
+  let domainIndex = 1;
+  for (const _domain in bfsiServicesData) {
+    const container = document.getElementById(`domain-${domainIndex}`);
+    const text = document.getElementById(`toggle-text-${domainIndex}`);
+    const icon = document.getElementById(`toggle-icon-${domainIndex}`);
+    if (container) {
+      container.classList.remove('active');
+      text.textContent = 'Show Components';
+      icon.textContent = '▼';
+      let componentIndex = 1;
+      for (const _component in bfsiServicesData[_domain].components) {
+        const services = document.getElementById(`services-${domainIndex}-${componentIndex}`);
+        const cIcon = document.getElementById(`icon-${domainIndex}-${componentIndex}`);
+        if (services && cIcon) {
+          services.classList.remove('active');
+          cIcon.classList.remove('rotated');
+        }
+        componentIndex++;
+      }
+    }
+    domainIndex++;
+  }
+}
+
+function scrollToTop() {
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+/* Export Functions */
+function exportToCSV() {
+  let csv = 'Domain,Component,Service Type,Service Name,Service Code\n';
+  for (const [domainName, domainData] of Object.entries(bfsiServicesData)) {
+    for (const [componentName, services] of Object.entries(domainData.components)) {
+      if (services.primary) {
+        services.primary.forEach(s => {
+          csv += `"${domainName}","${componentName}","Primary","${s.name}","${s.code}"\n`;
+        });
+      }
+      if (services.supporting) {
+        services.supporting.forEach(s => {
+          csv += `"${domainName}","${componentName}","Supporting","${s.name}","${s.code}"\n`;
+        });
+      }
+    }
+  }
+  downloadFile(csv,'aws-bfsi-landing-zone-services.csv','text/csv');
+}
+
+function exportToJSON() {
+  const json = JSON.stringify(bfsiServicesData,null,2);
+  downloadFile(json,'aws-bfsi-landing-zone-services.json','application/json');
+}
+
+function downloadFile(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* Keyboard Shortcuts */
+document.addEventListener('keydown', e => {
+  if (e.key === 'e' || e.key === 'E') expandAll();
+  if (e.key === 'c' || e.key === 'C') collapseAll();
+  if (e.key === 't' || e.key === 'T') scrollToTop();
+});
+
+/* Initialize */
+window.onload = () => generateDomainHTML();
+</script>
+</body>
+</html>
